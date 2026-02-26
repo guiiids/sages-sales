@@ -1,0 +1,519 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Citation Validator | SAGE Admin</title>
+    <link rel="icon" type="image/png" href="/static/nav_3.png">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Roboto+Condensed:wght@400;700&family=Roboto:wght@100;300;400;500&display=swap"
+        rel="stylesheet">
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Roboto', 'sans-serif'],
+                        condensed: ['Roboto Condensed', 'sans-serif'],
+                    },
+                    colors: {
+                        agilent: { blue: '#0085D5', dark: '#0B3F63' }
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+
+<body class="bg-white text-slate-700 min-h-screen">
+
+    <!-- Top Nav -->
+    <nav class="px-8 py-6 flex items-center gap-4 border-b border-slate-100">
+        <a href="./index.html" class="text-slate-400 hover:text-agilent-blue transition">
+            <i class="ph-light ph-arrow-left text-2xl"></i>
+        </a>
+        <h1 class="text-2xl font-thin text-slate-800">Citation Validator</h1>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="max-w-7xl mx-auto p-8 grid grid-cols-1 lg:grid-cols-2 gap-16 relative">
+
+        <!-- Decorative Vertical Dotted Line (Center) -->
+        <div class="hidden lg:block absolute left-1/2 top-8 bottom-8 border-l border-dashed border-slate-200"></div>
+
+        <!-- LEFT COLUMN: INPUTS -->
+        <div class="flex flex-col gap-8">
+            <!-- Header Icon -->
+            <div class="mb-2">
+                <i class="ph-light ph-file-text text-5xl text-agilent-blue"></i>
+            </div>
+
+            <h2 class="text-lg font-condensed font-bold text-agilent-blue uppercase tracking-wide">
+                Input Data
+            </h2>
+
+            <div class="space-y-6">
+                <!-- Query ID Load Section -->
+                <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                    <h3 class="text-sm font-medium text-slate-700 mb-3 flex items-center gap-2">
+                        <i class="ph-light ph-database text-lg text-agilent-blue"></i>
+                        Load from Database
+                    </h3>
+                    <div class="flex gap-3">
+                        <input id="query-id-input" type="number"
+                            class="flex-1 bg-white border border-slate-200 rounded p-3 font-light text-slate-600 focus:outline-none focus:border-agilent-blue focus:ring-1 focus:ring-agilent-blue transition"
+                            placeholder="Enter Query ID (e.g., 123)" min="1"
+                            onkeypress="if(event.key === 'Enter') loadQueryById()" />
+                        <button onclick="loadQueryById()"
+                            class="px-6 py-3 bg-agilent-blue text-white font-condensed font-bold uppercase tracking-wide rounded shadow-md hover:bg-blue-600 hover:shadow-lg transition-all transform active:scale-95 flex items-center gap-2 whitespace-nowrap">
+                            <i class="ph-light ph-download-simple"></i>
+                            Load
+                        </button>
+                    </div>
+                    <p class="text-xs text-slate-500 mt-2 italic">
+                        Load query data from the database by ID, or manually enter below.
+                    </p>
+                </div>
+
+                <!-- Divider -->
+                <div class="relative">
+                    <div class="absolute inset-0 flex items-center">
+                        <div class="w-full border-t border-slate-200"></div>
+                    </div>
+                    <div class="relative flex justify-center text-xs uppercase">
+                        <span class="bg-white px-2 text-slate-400">Or Enter Manually</span>
+                    </div>
+                </div>
+
+                <!-- User Query -->
+
+                <div>
+                    <label class="block text-sm font-medium text-slate-700 mb-2">User Query</label>
+                    <textarea
+                        class="w-full bg-slate-50 border border-slate-200 rounded p-4 font-light text-slate-600 focus:outline-none focus:border-agilent-blue focus:ring-1 focus:ring-agilent-blue transition resize-none"
+                        rows="2" placeholder="e.g. How do I calibrate the pump?"></textarea>
+                </div>
+
+                <!-- Bot Response -->
+                <div>
+                    <label class="block text-sm font-medium text-slate-700 mb-2">Bot Response</label>
+                    <textarea
+                        class="w-full bg-slate-50 border border-slate-200 rounded p-4 font-light text-slate-600 focus:outline-none focus:border-agilent-blue focus:ring-1 focus:ring-agilent-blue transition resize-none"
+                        rows="5" placeholder="Paste the generated answer here..."></textarea>
+                </div>
+
+                <!-- Source Text -->
+                <div>
+                    <label class="block text-sm font-medium text-slate-700 mb-2">Source / Context</label>
+                    <textarea
+                        class="w-full bg-slate-50 border border-slate-200 rounded p-4 font-light text-slate-600 focus:outline-none focus:border-agilent-blue focus:ring-1 focus:ring-agilent-blue transition resize-none"
+                        rows="8" placeholder="Paste the content of the referenced documents here..."></textarea>
+                    <p class="text-xs text-slate-400 mt-2 italic">*Explicit file path recommended for better
+                        traceability.</p>
+                </div>
+
+                <button onclick="runValidation()"
+                    class="mt-4 px-8 py-3 bg-agilent-blue text-white font-condensed font-bold uppercase tracking-wide rounded shadow-lg shadow-blue-500/30 hover:bg-blue-600 hover:shadow-xl transition-all transform active:scale-95 flex items-center justify-center gap-2">
+                    Run Validation
+                </button>
+            </div>
+        </div>
+
+
+        <!-- RIGHT COLUMN: RESULTS -->
+        <div class="flex flex-col gap-8">
+            <!-- Header Icon -->
+            <div class="mb-2">
+                <i class="ph-light ph-shield-check text-5xl text-agilent-blue"></i>
+            </div>
+
+            <h2 class="text-lg font-condensed font-bold text-agilent-blue uppercase tracking-wide">
+                Validation Report
+            </h2>
+
+            <!-- Empty State -->
+            <div id="empty-state" class="flex-grow flex flex-col justify-start pt-10 text-slate-400">
+                <p class="font-light text-lg">Results will appear here after analysis.</p>
+                <div class="mt-6 border-l-2 border-slate-100 pl-4 space-y-2">
+                    <p class="text-sm">1. Checks for factual grounding.</p>
+                    <p class="text-sm">2. Highlights potential hallucinations.</p>
+                    <p class="text-sm">3. Verifies citation mapping.</p>
+                </div>
+            </div>
+
+            <!-- Loading State -->
+            <div id="loading-state" class="hidden flex-grow flex flex-col items-center justify-center py-20">
+                <div class="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-agilent-blue mb-4"></div>
+                <p class="font-condensed font-bold text-agilent-blue uppercase animate-pulse">Analyzing...</p>
+            </div>
+
+            <!-- Results Card -->
+            <div id="result-card" class="hidden space-y-6 animate-fade-in-up">
+
+                <!-- Score Block -->
+                <div class="bg-slate-50 border border-slate-100 p-6 rounded-lg flex items-center gap-6">
+                    <div class="relative h-20 w-20 flex-shrink-0">
+                        <svg class="h-full w-full transform -rotate-90">
+                            <circle cx="40" cy="40" r="36" stroke="currentColor" stroke-width="3" fill="none"
+                                class="text-slate-200" />
+                            <circle cx="40" cy="40" r="36" stroke="currentColor" stroke-width="3" fill="none"
+                                class="text-green-500" stroke-dasharray="226" stroke-dashoffset="20" />
+                        </svg>
+                        <span
+                            class="absolute inset-0 flex items-center justify-center font-condensed font-bold text-2xl text-slate-700">92%</span>
+                    </div>
+                    <div>
+                        <h3 class="text-lg font-medium text-slate-800">Grounded Response</h3>
+                        <p class="text-sm font-light text-slate-500">The response is highly consistent with the provided
+                            source material.</p>
+                    </div>
+                </div>
+
+                <!-- Findings List -->
+                <div class="space-y-4">
+                    <div class="border-l-4 border-green-500 pl-4 py-1">
+                        <span
+                            class="block text-xs font-condensed font-bold text-green-600 uppercase mb-1">Verified</span>
+                        <p class="text-sm font-light text-slate-600">Calibration steps match Section 4.2 of the manual
+                            perfectly.</p>
+                    </div>
+
+                    <div class="border-l-4 border-orange-400 pl-4 py-1">
+                        <span class="block text-xs font-condensed font-bold text-orange-500 uppercase mb-1">Uncited
+                            Claim</span>
+                        <p class="text-sm font-light text-slate-600">The mention of "weekly maintenance" was not found
+                            in the source text.</p>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Load query data by ID from the database
+        async function loadQueryById() {
+            const queryIdInput = document.getElementById('query-id-input');
+            const queryId = queryIdInput.value.trim();
+
+            // Validate query ID input
+            if (!queryId) {
+                showError('Please enter a Query ID');
+                return;
+            }
+
+            // Show loading state
+            const empty = document.getElementById('empty-state');
+            const loading = document.getElementById('loading-state');
+            const result = document.getElementById('result-card');
+
+            empty.classList.add('hidden');
+            result.classList.add('hidden');
+            loading.classList.remove('hidden');
+            loading.classList.add('flex');
+
+            try {
+                // Fetch query data from API
+                const response = await fetch(`/api/get_query_by_id?query_id=${encodeURIComponent(queryId)}`);
+                const data = await response.json();
+
+                // Hide loading state
+                loading.classList.add('hidden');
+                loading.classList.remove('flex');
+
+                if (!response.ok || !data.success) {
+                    // Show error in results area
+                    displayError(data.error || 'Failed to load query data');
+                    result.classList.remove('hidden');
+                    return;
+                }
+
+                // Populate the form fields
+                populateFields(data.data);
+
+                // Show success message briefly
+                showSuccessMessage(`Loaded Query ID ${queryId}`);
+
+                // Automatically run validation
+                setTimeout(() => {
+                    runValidation();
+                }, 500);
+
+            } catch (error) {
+                console.error('Error loading query by ID:', error);
+                loading.classList.add('hidden');
+                loading.classList.remove('flex');
+                displayError(`Failed to load query: ${error.message}`);
+                result.classList.remove('hidden');
+            }
+        }
+
+        // Populate form fields with fetched data
+        function populateFields(data) {
+            const queryField = document.querySelector('textarea[placeholder*="How do I calibrate"]');
+            const answerField = document.querySelector('textarea[placeholder*="generated answer"]');
+            const contextField = document.querySelector('textarea[placeholder*="referenced documents"]');
+
+            if (queryField) queryField.value = data.user_query || '';
+            if (answerField) answerField.value = data.response || '';
+            if (contextField) contextField.value = data.context || '';
+        }
+
+        // Show success message
+        function showSuccessMessage(message) {
+            const existingMsg = document.getElementById('success-message');
+            if (existingMsg) {
+                existingMsg.remove();
+            }
+
+            const successDiv = document.createElement('div');
+            successDiv.id = 'success-message';
+            successDiv.className = 'fixed top-4 right-4 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg z-50 animate-fade-in-up';
+            successDiv.innerHTML = `
+                <div class="flex items-center gap-2">
+                    <i class="ph-light ph-check-circle text-xl"></i>
+                    <span class="font-medium">${escapeHtml(message)}</span>
+                </div>
+            `;
+            document.body.appendChild(successDiv);
+
+            // Auto-remove after 3 seconds
+            setTimeout(() => {
+                successDiv.classList.add('opacity-0', 'transition-opacity', 'duration-500');
+                setTimeout(() => successDiv.remove(), 500);
+            }, 3000);
+        }
+
+        // Show error alert
+        function showError(message) {
+            alert(message);
+        }
+
+        async function runValidation() {
+
+            const empty = document.getElementById('empty-state');
+            const loading = document.getElementById('loading-state');
+            const result = document.getElementById('result-card');
+
+            // Get input values
+            const query = document.querySelector('textarea[placeholder*="How do I calibrate"]').value.trim();
+            const answer = document.querySelector('textarea[placeholder*="generated answer"]').value.trim();
+            const context = document.querySelector('textarea[placeholder*="referenced documents"]').value.trim();
+
+            // Validate inputs
+            if (!query || !answer || !context) {
+                alert('Please fill in all three fields: User Query, Bot Response, and Source/Context');
+                return;
+            }
+
+            // Show loading state
+            empty.classList.add('hidden');
+            result.classList.add('hidden');
+            loading.classList.remove('hidden');
+            loading.classList.add('flex');
+
+            try {
+                // Call the validation API
+                const response = await fetch('/api/validate_groundedness', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        query: query,
+                        answer: answer,
+                        context: context
+                    })
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.error || 'Validation request failed');
+                }
+
+                const data = await response.json();
+
+                // Display results
+                displayResults(data);
+
+                loading.classList.add('hidden');
+                loading.classList.remove('flex');
+                result.classList.remove('hidden');
+
+            } catch (error) {
+                console.error('Validation error:', error);
+                loading.classList.add('hidden');
+                loading.classList.remove('flex');
+
+                // Show error state
+                displayError(error.message);
+                result.classList.remove('hidden');
+            }
+        }
+
+        function displayResults(data) {
+            const resultCard = document.getElementById('result-card');
+
+            // Calculate percentage score
+            const scorePercent = Math.round((data.score || 0) * 100);
+
+            // Determine color scheme based on score
+            let scoreColor = 'text-green-500';
+            let statusText = 'Grounded Response';
+            let statusDesc = 'The response is highly consistent with the provided source material.';
+            let borderColor = 'border-green-500';
+
+            if (scorePercent < 60) {
+                scoreColor = 'text-red-500';
+                statusText = 'Ungrounded Response';
+                statusDesc = 'The response contains significant unsupported claims.';
+                borderColor = 'border-red-500';
+            } else if (scorePercent < 80) {
+                scoreColor = 'text-orange-500';
+                statusText = 'Partially Grounded';
+                statusDesc = 'The response has some unsupported or questionable claims.';
+                borderColor = 'border-orange-500';
+            }
+
+            // Calculate stroke dashoffset for circular progress (circumference = 2πr = 226)
+            const circumference = 226;
+            const strokeDashoffset = circumference - (circumference * scorePercent / 100);
+
+            // Build the results HTML using only Tailwind classes
+            resultCard.innerHTML = `
+                <!-- Score Block -->
+                <div class="bg-slate-50 border border-slate-100 p-6 rounded-lg flex items-center gap-6 mb-6">
+                    <div class="relative h-20 w-20 flex-shrink-0">
+                        <svg class="h-full w-full transform -rotate-90">
+                            <circle cx="40" cy="40" r="36" stroke="currentColor" stroke-width="3" fill="none" class="text-slate-200" />
+                            <circle cx="40" cy="40" r="36" stroke="currentColor" stroke-width="3" fill="none" class="${scoreColor}" 
+                                    stroke-dasharray="226" stroke-dashoffset="${strokeDashoffset}" />
+                        </svg>
+                        <span class="absolute inset-0 flex items-center justify-center font-bold text-2xl text-slate-700">${scorePercent}%</span>
+                    </div>
+                    <div>
+                        <h3 class="text-lg font-medium text-slate-800">${statusText}</h3>
+                        <p class="text-sm font-light text-slate-500">${statusDesc}</p>
+                        ${data.confidence ? `<p class="text-xs text-slate-400 mt-1">Confidence: ${Math.round(data.confidence * 100)}%</p>` : ''}
+                    </div>
+                </div>
+
+                <!-- Evaluation Summary -->
+                ${data.evaluation_summary ? `
+                <div class="bg-blue-50 border-l-4 border-blue-500 p-4 rounded mb-6">
+                    <p class="text-sm text-blue-900">${escapeHtml(data.evaluation_summary)}</p>
+                </div>
+                ` : ''}
+
+                <!-- Supported Claims -->
+                ${(data.supported_claims && data.supported_claims.length > 0) ? `
+                <div class="mb-6">
+                    <h4 class="text-sm font-bold text-green-600 uppercase mb-3 flex items-center gap-2">
+                        <i class="ph-light ph-check-circle text-lg"></i>
+                        Supported Claims (${data.supported_claims.length})
+                    </h4>
+                    <div class="space-y-3">
+                        ${data.supported_claims.slice(0, 10).map(claim => `
+                            <div class="border-l-4 border-green-500 pl-4 py-2 bg-green-50 rounded-r">
+                                <p class="text-sm text-slate-700">${escapeHtml(typeof claim === 'string' ? claim : claim.claim || JSON.stringify(claim))}</p>
+                            </div>
+                        `).join('')}
+                        ${data.supported_claims.length > 10 ? `
+                            <p class="text-xs text-slate-400 italic">...and ${data.supported_claims.length - 10} more</p>
+                        ` : ''}
+                    </div>
+                </div>
+                ` : ''}
+
+                <!-- Unsupported Claims -->
+                ${(data.unsupported_claims && data.unsupported_claims.length > 0) ? `
+                <div class="mb-6">
+                    <h4 class="text-sm font-bold text-orange-600 uppercase mb-3 flex items-center gap-2">
+                        <i class="ph-light ph-warning text-lg"></i>
+                        Unsupported Claims (${data.unsupported_claims.length})
+                    </h4>
+                    <div class="space-y-3">
+                        ${data.unsupported_claims.slice(0, 10).map(claim => `
+                            <div class="border-l-4 ${borderColor} pl-4 py-2 bg-orange-50 rounded-r">
+                                <p class="text-sm font-medium text-slate-800">${escapeHtml(claim.claim || claim)}</p>
+                                ${claim.reason ? `<p class="text-xs text-slate-500 mt-1">${escapeHtml(claim.reason)}</p>` : ''}
+                            </div>
+                        `).join('')}
+                        ${data.unsupported_claims.length > 10 ? `
+                            <p class="text-xs text-slate-400 italic">...and ${data.unsupported_claims.length - 10} more</p>
+                        ` : ''}
+                    </div>
+                </div>
+                ` : ''}
+
+                <!-- Citation Audit -->
+                ${data.citations ? `
+                <div class="mb-6 bg-slate-50 border border-slate-200 p-4 rounded-lg">
+                    <h4 class="text-sm font-bold text-slate-700 uppercase mb-3 flex items-center gap-2">
+                        <i class="ph-light ph-quotes text-lg"></i>
+                        Citation Analysis
+                    </h4>
+                    <div class="grid grid-cols-2 gap-4 text-sm">
+                        <div>
+                            <span class="text-slate-500">Has Citations:</span>
+                            <span class="ml-2 font-medium ${data.citations.has_any_citations ? 'text-green-600' : 'text-red-600'}">
+                                ${data.citations.has_any_citations ? 'Yes' : 'No'}
+                            </span>
+                        </div>
+                        <div>
+                            <span class="text-slate-500">Coverage:</span>
+                            <span class="ml-2 font-medium">${Math.round((data.citations.coverage_ratio || 0) * 100)}%</span>
+                        </div>
+                        ${data.citations.missing_ids && data.citations.missing_ids.length > 0 ? `
+                        <div class="col-span-2">
+                            <span class="text-slate-500">Missing IDs:</span>
+                            <span class="ml-2 font-medium text-orange-600">[${data.citations.missing_ids.join(', ')}]</span>
+                        </div>
+                        ` : ''}
+                    </div>
+                </div>
+                ` : ''}
+
+                <!-- Recommendations -->
+                ${(data.recommendations && data.recommendations.length > 0) ? `
+                <div class="bg-blue-50 border border-blue-200 p-4 rounded-lg">
+                    <h4 class="text-sm font-bold text-blue-700 uppercase mb-2">Recommendations</h4>
+                    <ul class="space-y-2">
+                        ${data.recommendations.map(rec => `
+                            <li class="text-sm text-blue-900 flex gap-2">
+                                <span class="text-blue-500">•</span>
+                                <span>${escapeHtml(rec)}</span>
+                            </li>
+                        `).join('')}
+                    </ul>
+                </div>
+                ` : ''}
+            `;
+        }
+
+        function displayError(errorMessage) {
+            const resultCard = document.getElementById('result-card');
+            resultCard.innerHTML = `
+                <div class="bg-red-50 border-l-4 border-red-500 p-6 rounded">
+                    <div class="flex items-center gap-3 mb-2">
+                        <i class="ph-light ph-warning-circle text-3xl text-red-600"></i>
+                        <h3 class="text-lg font-medium text-red-800">Validation Error</h3>
+                    </div>
+                    <p class="text-sm text-red-700">${escapeHtml(errorMessage)}</p>
+                    <p class="text-xs text-red-600 mt-3">Please check your inputs and try again, or contact support if the issue persists.</p>
+                </div>
+            `;
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+    </script>
+</body>
+
+</html>

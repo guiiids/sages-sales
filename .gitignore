@@ -1,0 +1,370 @@
+# Ignore generated env file and script
+azure_to_env.py
+# Ignore generated env file and script
+.env.azure
+# Ignore Python virtual environment
+.venv/
+
+# Ignore large zip archive
+beforeRedis-RAGKA-v1r1-Memory-Clean.zip
+node_modules
+
+# Ignore environment file
+.env
+
+# Ignore macOS system files
+.DS_Store
+# Ignore Script Execimt
+simple_test_api_call.sh
+
+
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# C extensions
+*.so
+
+# Distribution / packaging
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+pip-wheel-metadata/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# PyInstaller
+#  Usually these files are written by a python script from a template
+#  before PyInstaller builds the exe, so as to inject date/other infos into it.
+*.manifest
+*.spec
+
+# Installer logs
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Unit test / coverage reports
+htmlcov/
+.tox/
+.nox/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+*.py,cover
+.hypothesis/
+.pytest_cache/
+
+# Translations
+*.mo
+*.pot
+
+# Django stuff:
+*.log
+local_settings.py
+db.sqlite3
+db.sqlite3-journal
+
+# Flask stuff:
+instance/
+.webassets-cache
+
+# Scrapy stuff:
+.scrapy
+
+# Sphinx documentation
+docs/_build/
+
+# PyBuilder
+target/
+
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# IPython
+profile_default/
+ipython_config.py
+
+# pyenv
+.python-version
+
+# pipenv
+#   According to pypa/pipenv#598, it is recommended to include Pipfile.lock in version control.
+#   However, in case of collaboration, if having platform-specific dependencies or dependencies
+#   having no cross-platform support, pipenv may install dependencies that don't work, or not
+#   install all needed dependencies.
+#Pipfile.lock
+
+# PEP 582; used by e.g. github.com/David-OConnor/pyflow
+__pypackages__/
+
+# Celery stuff
+celerybeat-schedule
+celerybeat.pid
+
+# SageMath parsed files
+*.sage.py
+
+# Environments
+.env
+.venv
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+
+# Spyder project settings
+.spyderproject
+.spyproject
+
+# Rope project settings
+.ropeproject
+
+# mkdocs documentation
+/site
+
+# mypy
+.mypy_cache/
+.dmypy.json
+dmypy.json
+
+# Pyre type checker
+.pyre/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Project specific
+*.sqlite
+*.db
+logs/
+temp/
+node_modules/
+
+# du -sh * | sort -hr | head -10
+
+.main_clone.py
+
+# Large/binary and local DB snapshots (prevent 100MB push blocks)
+rag_queries_backup_*.sql
+cosmosdb-data/
+Spreadsheets/
+app.log
+output/
+.main_clone.py
+._env
+attempt_fix_inline_citations.md
+azure-appservice-settings.jsontranscribe.py
+transcribe.py
+.azure-temp-env-files/
+.env-2
+.env-3
+.env.sample
+.env.azure
+
+# Env patterns and exceptions
+.env
+*.env
+.env.*
+!*.env.example
+!.env.sample
+
+# Azure env/config artifacts
+.azure-temp-env-files/
+azure_env_settings.json
+azure-appservice-settings.json
+azure_to_env.py
+set_azure_env.sh
+delete_azure_env.sh
+
+# Local backups and ephemeral
+.pre_rebase_backup/
+.deleted_*
+
+# Generated reports and telemetry (optional; remove if canonical)
+static/dev_eval_reports/
+test_reports/
+templates/*.csv
+feedback_data/
+
+# Large/binary artifacts (optional; keep if canonical)
+rag_to_v2.pdf
+.env
+*.env
+.env.*
+!.env.sample
+!*.env.example
+._env
+.envazure
+.azure-temp-env-files/
+azure_env_settings.json
+azure-appservice-settings.json
+azure_to_env.py
+security-reports/
+*.jsonl
+_tmp_proxytest/
+
+# Hidden files: ignore all dotfiles by default, with safe exceptions
+.*
+!/.gitignore
+!/.gitattributes
+!/.gitmodules
+!/.env.example
+!/.env.sample
+
+docs/FINAL_PR_EXECUTION_PLAN.md
+docs/PR4_DRY_RUN.md
+docs/PR4_VERIFICATION_REPORT.md
+docs/SAGE_EXPERIMENTAL_MODE_PLAN.md
+eval_gpt4o_no_reranker_20260105.json
+eval_gpt4o_reranker_20260105.json
+eval_gpt5.2_reranker_20260105.json
+
+reranker_enabled_baseline_20260104_221950.json
+reranker_hybrid_baseline_20260104_230407.json
+
+templates/ilab-3.html
+templates/ilab.html
+templates/sandbox.html
+templates/template_test_turns.html
+backups_experimental_mode_20260108_103302/
+static/overlay_2.jpeg
+
+
+benchmark_baseline.json
+benchmark_reranker.json
+beta-testing-2-responses.json
+evaluation_report.json
+evaluation_report_20260101_155745.json
+evaluation_report_20260103_062731.json
+evaluation_report_ilab.json
+evaluation_report_no_reranker.json
+eval_gpt-4o-dev-dev_no_reranker_011120250628PM_beta_perfect_test.json
+eval_gpt-5.2-dev_reranker_0111202560600PM_beta_perfect_test.json
+eval_gpt4o_reranker_0111202554500PM_beta_perfect_test.json
+validation_report.json
+validation_report_v2.json
+validation_report_v3.json
+validation_report_v4.json
+validation_report_v5.json
+golden_set_sage10.csv
+perfect_scores_full.csv
+no_reranker_baseline_20260104_205833.json
+test_data.json
+query_vote_1614.py
+reproduce_cases.json
+docs_review/
+
+model_tester.py
+
+perfect_scores_report.txt
+quick_test.py
+report_ilab_validation.json
+templates/model_comparison.html
+test_models_comparison.py
+analyze_traffic.py
+
+eval_gpt-4o-dev_reranker_beta_perfect_test.json
+eval_gpt-5.2-dev_reranker_beta_perfect_test.json
+eval_gpt-o4-mini_reranker_beta_perfect_test.json*.env.local
+*.env.examople
+*.env.sample
+*.env.production
+*.env.backup.*
+eval_gpt-o4-mini_reranker_beta_perfect_test.json
+SAGE_1-5.csv
+
+sage_sample.csv
+templates/hub/observability.html
+test_observability_data.py
+
+SCHEMA.xlsx
+sage_12
+sage_12.sql
+templates/restyling_no_renumbering.html
+test_output.json
+verification_output.json
+~$SCHEMA.xlsx
+assessment/
+
+# RADAR Evaluation Artifacts
+radar_analysis_full_config.html
+radar_analysis_test.html
+radar_ilab_query.html
+radar_report.html
+radar_rslt_files.html
+radar_test_fixed_2.html
+radar_test_fixed_new_bad_feedback.html
+radar_test_fixed_new_bad_feedback2.html
+radar_test_fixed_new_fund_ilab.html
+radar_test_fixed_new_prompt.html
+radar_test_refined.html
+
+# Local testing and reasoners
+test_sdk_reasoning.py
+test_sdk_reason ing.py
+
+# Template backups
+templates/*.backup-*
+# SAGE 1.5 Archive
+SAGE_1.5_source/
+
+# API Routes documentation (auto-generated)
+docs/api_routes_map.md
+docs/scaling_optimization_track.md
+<<<<<<< Updated upstream
+=======
+
+>>>>>>> Stashed changes
+docs/SAGE_Framework_Migration_Recommendation.pdf
+docs/classic_vs_intermediate_prompt_comparison.pdf
+docs/generate_persona_prompts_pdf.py
+docs/generate_prompt_comparison_pdf.py
+<<<<<<< Updated upstream
+docs/system_prompts_by_persona.md
+docs/system_prompts_by_persona.pdf
+test_map.py
+test_regex.js
+test_stream.py
+=======
+docs/generate_session_fix_report.py
+docs/intermediate_prompt_change_analysis.md
+docs/system_prompts_by_persona.md
+docs/system_prompts_by_persona.pdf
+test_map.py
+
+test_regex.js
+test_stream.py
+test_stream_response.py
+>>>>>>> Stashed changes
+s

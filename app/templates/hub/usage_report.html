@@ -1,0 +1,971 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Usage Analysis & Testing Report</title>
+    <!-- Fonts: Inter (Enterprise Standard) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Roboto+Mono:wght@400;500&display=swap"
+        rel="stylesheet">
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        mono: ['Roboto Mono', 'monospace'],
+                    },
+                    colors: {
+                        enterprise: {
+                            50: '#f8fafc',
+                            100: '#f1f5f9',
+                            200: '#e2e8f0',
+                            300: '#cbd5e1',
+                            400: '#94a3b8',
+                            500: '#64748b',
+                            600: '#475569',
+                            700: '#334155',
+                            800: '#1e293b',
+                            900: '#0f172a',
+                            blue: '#0057b8', // Agilent Blue
+                            darkBlue: '#003366', // Corporate Deep Blue
+                        }
+                    },
+                    boxShadow: {
+                        'sm': '0 1px 2px 0 rgb(0 0 0 / 0.05)',
+                        'md': '0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1)',
+                    }
+                }
+            }
+        }
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+</head>
+
+<body
+    class="min-h-screen bg-enterprise-50 font-sans text-enterprise-900 antialiased selection:bg-blue-100 selection:text-blue-900">
+
+    <!-- Enterprise Header Banner -->
+    <header class="bg-enterprise-darkBlue border-b-4 border-enterprise-blue text-white sticky top-0 z-50 shadow-md">
+        <div class="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
+            <div>
+                <div class="text-[10px] font-bold tracking-widest uppercase text-blue-200/80 mb-0.5">Confidential —
+                    Internal Use Only</div>
+                <h1 class="text-xl font-semibold tracking-tight text-white">Usage Analysis & Testing Report</h1>
+            </div>
+            <div class="text-right hidden sm:block">
+                <div class="text-xs font-medium text-blue-100">Generated</div>
+                <div class="text-sm font-bold text-white mono">Feb 09, 2026</div>
+            </div>
+        </div>
+    </header>
+
+    <div class="max-w-5xl mx-auto px-6 py-8 space-y-10">
+
+        <!-- Executive Summary Section -->
+        <section>
+            <div class="flex items-center justify-between mb-6">
+                <div>
+                    <h2 class="text-lg font-bold text-enterprise-800">Executive Summary</h2>
+                    <p class="text-sm text-enterprise-500 mt-1">Analysis of organic growth and user sentiment across Q4
+                        '25 and Q1 '26.</p>
+                </div>
+                <span
+                    class="bg-blue-50 text-enterprise-blue text-xs font-bold px-3 py-1.5 rounded-md border border-blue-100 uppercase tracking-wider">
+                    Verified Data
+                </span>
+            </div>
+
+            <!-- Info Cards -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                <!-- Card 1 -->
+                <div
+                    class="bg-white p-5 rounded-lg border border-enterprise-200 shadow-sm hover:shadow-md transition-shadow duration-200 group">
+                    <div class="flex justify-between items-start mb-2">
+                        <p class="text-xs font-bold text-enterprise-500 uppercase tracking-wide">Total Queries (Jan '26)
+                        </p>
+                        <svg class="w-4 h-4 text-enterprise-400 group-hover:text-enterprise-blue transition-colors"
+                            fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+                        </svg>
+                    </div>
+                    <div class="flex items-baseline gap-2">
+                        <p class="text-3xl font-bold text-enterprise-900">6,012</p>
+                        <span
+                            class="inline-flex items-baseline px-2 py-0.5 rounded text-xs font-medium bg-emerald-50 text-emerald-700">
+                            +26.6%
+                        </span>
+                    </div>
+                </div>
+
+                <!-- Card 2 (Highlighted) -->
+                <div
+                    class="bg-white p-5 rounded-lg border border-enterprise-200 shadow-sm border-l-4 border-l-enterprise-blue hover:shadow-md transition-shadow duration-200">
+                    <div class="flex justify-between items-start mb-2">
+                        <p class="text-xs font-bold text-enterprise-500 uppercase tracking-wide">Total Queries (Q1)</p>
+                        <span class="w-2 h-2 rounded-full bg-enterprise-blue"></span>
+                    </div>
+                    <div class="flex items-baseline gap-2">
+                        <p class="text-3xl font-bold text-enterprise-900">20,996</p>
+                        <span
+                            class="inline-flex items-baseline px-2 py-0.5 rounded text-xs font-medium bg-emerald-50 text-emerald-700">
+                            +7.23%
+                        </span>
+                    </div>
+                </div>
+
+                <!-- Card 3 -->
+                <div
+                    class="bg-white p-5 rounded-lg border border-enterprise-200 shadow-sm hover:shadow-md transition-shadow duration-200">
+                    <div class="flex justify-between items-start mb-2">
+                        <p class="text-xs font-bold text-enterprise-500 uppercase tracking-wide">Total Cost (Q1)</p>
+                        <svg class="w-4 h-4 text-enterprise-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                    </div>
+                    <div class="flex items-baseline gap-2">
+                        <p class="text-3xl font-bold text-emerald-700 font-mono tracking-tight">$4,149.93</p>
+                    </div>
+                </div>
+
+                <!-- Card 4: Avg Cost per Query -->
+                <div
+                    class="bg-white p-5 rounded-lg border border-enterprise-200 shadow-sm hover:shadow-md transition-shadow duration-200">
+                    <div class="flex justify-between items-start mb-2">
+                        <p class="text-xs font-bold text-enterprise-500 uppercase tracking-wide">Avg Cost / Query (Q1)
+                        </p>
+                        <svg class="w-4 h-4 text-enterprise-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+                        </svg>
+                    </div>
+                    <div class="flex items-baseline gap-2">
+                        <p class="text-3xl font-bold text-enterprise-blue font-mono tracking-tight">$0.20</p>
+                        <span class="text-xs text-enterprise-400">per query</span>
+                    </div>
+                    <p class="text-[10px] text-enterprise-400 mt-1 uppercase tracking-tight">$4,149.93 ÷ 20,996 queries
+                    </p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Usage Table Section -->
+        <section class="space-y-4">
+            <h2 class="text-lg font-bold text-enterprise-800 border-l-4 border-enterprise-800 pl-3">
+                Volume Metrics
+            </h2>
+            <div class="bg-white rounded-lg shadow-sm border border-enterprise-200 overflow-hidden ring-1 ring-black/5">
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left">
+                        <thead class="bg-enterprise-50 border-b border-enterprise-200">
+                            <tr>
+                                <th class="px-6 py-3 text-xs font-bold text-enterprise-500 uppercase tracking-wider">
+                                    Month</th>
+                                <th
+                                    class="px-6 py-3 text-xs font-bold text-enterprise-500 uppercase tracking-wider text-right">
+                                    User Queries</th>
+                                <th
+                                    class="px-6 py-3 text-xs font-bold text-enterprise-500 uppercase tracking-wider text-right">
+                                    Growth %</th>
+                                <th
+                                    class="px-6 py-3 text-xs font-bold text-enterprise-500 uppercase tracking-wider text-right">
+                                    Quarterly Total</th>
+                            </tr>
+                        </thead>
+                        <tbody id="usage-table-body" class="divide-y divide-enterprise-100">
+                            <!-- JS will populate this -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- Feedback Table Section: Month-over-Month Positive vs Constructive -->
+        <section class="space-y-4">
+            <h2 class="text-lg font-bold text-enterprise-800 border-l-4 border-enterprise-blue pl-3">
+                Sentiment & Feedback Analysis
+            </h2>
+            <p class="text-sm text-enterprise-500 ml-4">Total Feedback: <strong
+                    class="text-enterprise-800">1,783</strong> · Average Positive Rate: <strong
+                    class="text-enterprise-800">51.6%</strong></p>
+            <div class="bg-white rounded-lg shadow-sm border border-enterprise-200 overflow-hidden ring-1 ring-black/5">
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left">
+                        <thead class="bg-enterprise-50 border-b border-enterprise-200">
+                            <tr>
+                                <th class="px-6 py-3 text-xs font-bold text-enterprise-500 uppercase tracking-wider">
+                                    Month</th>
+                                <th
+                                    class="px-6 py-3 text-xs font-bold text-enterprise-500 uppercase tracking-wider text-right">
+                                    👍 Positive</th>
+                                <th
+                                    class="px-6 py-3 text-xs font-bold text-enterprise-500 uppercase tracking-wider text-right">
+                                    👎 Constructive</th>
+                                <th
+                                    class="px-6 py-3 text-xs font-bold text-enterprise-500 uppercase tracking-wider text-right">
+                                    Total</th>
+                                <th
+                                    class="px-6 py-3 text-xs font-bold text-enterprise-500 uppercase tracking-wider text-right">
+                                    Positive %</th>
+                                <th
+                                    class="px-6 py-3 text-xs font-bold text-enterprise-500 uppercase tracking-wider text-center">
+                                    Trend</th>
+                            </tr>
+                        </thead>
+                        <tbody id="feedback-table-body" class="divide-y divide-enterprise-100">
+                            <!-- JS will populate this -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- Daily Breakdown: Jan 28 – Feb 9, 2026 -->
+        <section class="space-y-4">
+            <h2 class="text-lg font-bold text-enterprise-800 border-l-4 border-amber-500 pl-3">
+                Special Analysis: Daily Breakdown (Jan 28 – Feb 9, 2026)
+            </h2>
+            <div class="bg-white rounded-lg shadow-sm border border-enterprise-200 overflow-hidden ring-1 ring-black/5">
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left">
+                        <thead class="bg-enterprise-50 border-b border-enterprise-200">
+                            <tr>
+                                <th class="px-6 py-3 text-xs font-bold text-enterprise-500 uppercase tracking-wider">
+                                    Date</th>
+                                <th class="px-6 py-3 text-xs font-bold text-enterprise-500 uppercase tracking-wider">Day
+                                </th>
+                                <th
+                                    class="px-6 py-3 text-xs font-bold text-enterprise-500 uppercase tracking-wider text-right">
+                                    👍 Pos</th>
+                                <th
+                                    class="px-6 py-3 text-xs font-bold text-enterprise-500 uppercase tracking-wider text-right">
+                                    👎 Con</th>
+                                <th
+                                    class="px-6 py-3 text-xs font-bold text-enterprise-500 uppercase tracking-wider text-right">
+                                    Total</th>
+                                <th
+                                    class="px-6 py-3 text-xs font-bold text-enterprise-500 uppercase tracking-wider text-right">
+                                    Positive %</th>
+                            </tr>
+                        </thead>
+                        <tbody id="daily-table-body" class="divide-y divide-enterprise-100">
+                            <!-- JS will populate this -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Daily Feedback Chart -->
+            <div class="bg-white rounded-lg shadow-sm border border-enterprise-200 p-6">
+                <div class="flex items-center gap-2 mb-4">
+                    <h3 class="text-xs font-bold text-enterprise-500 uppercase tracking-widest">Daily Positive vs
+                        Constructive Feedback</h3>
+                    <span class="text-[10px] text-enterprise-400 bg-enterprise-50 px-2 py-0.5 rounded">Stacked bars +
+                        Positive % trend</span>
+                </div>
+                <div style="position: relative; height: 280px;">
+                    <canvas id="dailyFeedbackChart"></canvas>
+                </div>
+            </div>
+
+            <div class="bg-blue-50 border border-blue-100 rounded-lg p-4 text-sm text-enterprise-600">
+                <strong class="text-enterprise-800">13-day window total:</strong> 100 positive, 78 constructive =
+                <strong class="text-enterprise-blue">56.2% positive</strong>.
+                Notable upward trend — Feb 5–7 averaged <strong class="text-emerald-700">72.1% positive</strong> across
+                68 interactions.
+            </div>
+        </section>
+
+        <!-- Tag Analysis -->
+        <section class="space-y-6">
+            <h2 class="text-lg font-bold text-enterprise-800 border-l-4 border-purple-500 pl-3">
+                Tag Analysis
+            </h2>
+            <p class="text-sm text-enterprise-500 ml-4">Tags separated into <strong>Time-Saving</strong> (positive
+                feedback) and <strong>Quality/Theme</strong> (constructive feedback). <code
+                    class="bg-enterprise-100 px-1 rounded text-xs">helpful</code> tag excluded (accompanies thumbs-up
+                only).</p>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Time-Saving Tags -->
+                <div class="bg-white rounded-lg shadow-sm border border-enterprise-200 overflow-hidden">
+                    <div class="bg-emerald-50 border-b border-emerald-100 px-6 py-3">
+                        <h3 class="text-xs font-bold text-emerald-700 uppercase tracking-widest">👍 Time-Saving Tags
+                            (Positive Feedback)</h3>
+                    </div>
+                    <table class="w-full text-left">
+                        <thead class="bg-enterprise-50 border-b border-enterprise-200">
+                            <tr>
+                                <th class="px-6 py-2 text-xs font-bold text-enterprise-500 uppercase tracking-wider">Tag
+                                </th>
+                                <th
+                                    class="px-6 py-2 text-xs font-bold text-enterprise-500 uppercase tracking-wider text-right">
+                                    Count</th>
+                                <th
+                                    class="px-6 py-2 text-xs font-bold text-enterprise-500 uppercase tracking-wider text-right">
+                                    %</th>
+                            </tr>
+                        </thead>
+                        <tbody id="time-tags-body" class="divide-y divide-enterprise-100"></tbody>
+                    </table>
+                </div>
+
+                <!-- Quality/Theme Tags -->
+                <div class="bg-white rounded-lg shadow-sm border border-enterprise-200 overflow-hidden">
+                    <div class="bg-rose-50 border-b border-rose-100 px-6 py-3">
+                        <h3 class="text-xs font-bold text-rose-700 uppercase tracking-widest">👎 Quality / Theme Tags
+                            (Constructive Feedback)</h3>
+                    </div>
+                    <table class="w-full text-left">
+                        <thead class="bg-enterprise-50 border-b border-enterprise-200">
+                            <tr>
+                                <th class="px-6 py-2 text-xs font-bold text-enterprise-500 uppercase tracking-wider">Tag
+                                </th>
+                                <th
+                                    class="px-6 py-2 text-xs font-bold text-enterprise-500 uppercase tracking-wider text-right">
+                                    Count</th>
+                                <th
+                                    class="px-6 py-2 text-xs font-bold text-enterprise-500 uppercase tracking-wider text-right">
+                                    %</th>
+                            </tr>
+                        </thead>
+                        <tbody id="quality-tags-body" class="divide-y divide-enterprise-100"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Insight callout -->
+            <div class="bg-amber-50 border border-amber-200 rounded-lg p-4 text-sm text-enterprise-700">
+                <strong class="text-amber-800">⚠ Key Insight:</strong> <code
+                    class="bg-white px-1 rounded text-xs">Incorrect</code> is the #1 constructive tag at
+                <strong>39.4%</strong>.
+                Combined with <code class="bg-white px-1 rounded text-xs">Incomplete</code> (21.9%), over
+                <strong>61%</strong> of constructive feedback points to answer accuracy and completeness.
+                <code class="bg-white px-1 rounded text-xs">Data Source Quality</code> (15.1%) suggests the document
+                corpus is also a contributing factor.
+            </div>
+        </section>
+
+        <!-- Last Quarter Tag Breakdown: Nov–Jan -->
+        <section class="space-y-4">
+            <h2 class="text-lg font-bold text-enterprise-800 border-l-4 border-indigo-500 pl-3">
+                Last Quarter Tag Breakdown (Nov 2025 – Jan 2026)
+            </h2>
+
+            <!-- Overall Feedback per Month -->
+            <div class="bg-white rounded-lg shadow-sm border border-enterprise-200 overflow-hidden ring-1 ring-black/5">
+                <div class="bg-enterprise-800 border-b border-enterprise-700 px-6 py-3">
+                    <h3 class="text-xs font-bold text-white uppercase tracking-widest">Overall Feedback per Month
+                        (Q1)</h3>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left">
+                        <thead class="bg-enterprise-50 border-b border-enterprise-200">
+                            <tr>
+                                <th class="px-6 py-3 text-xs font-bold text-enterprise-500 uppercase tracking-wider">
+                                    Month
+                                </th>
+                                <th
+                                    class="px-6 py-3 text-xs font-bold text-enterprise-500 uppercase tracking-wider text-right">
+                                    👍 Positive</th>
+                                <th
+                                    class="px-6 py-3 text-xs font-bold text-enterprise-500 uppercase tracking-wider text-right">
+                                    👎 Constructive</th>
+                                <th
+                                    class="px-6 py-3 text-xs font-bold text-enterprise-500 uppercase tracking-wider text-right">
+                                    Total</th>
+                                <th
+                                    class="px-6 py-3 text-xs font-bold text-enterprise-500 uppercase tracking-wider text-right">
+                                    Positive %</th>
+                            </tr>
+                        </thead>
+                        <tbody id="quarter-overall-body" class="divide-y divide-enterprise-100"></tbody>
+                    </table>
+                </div>
+            </div>
+
+
+            <!-- Quality Tags by Month -->
+            <div class="bg-white rounded-lg shadow-sm border border-enterprise-200 overflow-hidden ring-1 ring-black/5">
+                <div class="bg-rose-50 border-b border-rose-100 px-6 py-3">
+                    <h3 class="text-xs font-bold text-rose-700 uppercase tracking-widest">Quality / Theme Tags by Month
+                        (Constructive)</h3>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left">
+                        <thead class="bg-enterprise-50 border-b border-enterprise-200">
+                            <tr>
+                                <th class="px-6 py-3 text-xs font-bold text-enterprise-500 uppercase tracking-wider">Tag
+                                </th>
+                                <th
+                                    class="px-6 py-3 text-xs font-bold text-enterprise-500 uppercase tracking-wider text-right">
+                                    Nov 2025</th>
+                                <th
+                                    class="px-6 py-3 text-xs font-bold text-enterprise-500 uppercase tracking-wider text-right">
+                                    Dec 2025</th>
+                                <th
+                                    class="px-6 py-3 text-xs font-bold text-enterprise-500 uppercase tracking-wider text-right">
+                                    Jan 2026</th>
+                                <th
+                                    class="px-6 py-3 text-xs font-bold text-enterprise-500 uppercase tracking-wider text-right">
+                                    Totals Q1</th>
+                                <th
+                                    class="px-6 py-3 text-xs font-bold text-enterprise-500 uppercase tracking-wider text-center">
+                                    Trend</th>
+                            </tr>
+                        </thead>
+                        <tbody id="quarter-quality-body" class="divide-y divide-enterprise-100"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Time Tags by Month -->
+            <div class="bg-white rounded-lg shadow-sm border border-enterprise-200 overflow-hidden ring-1 ring-black/5">
+                <div class="bg-emerald-50 border-b border-emerald-100 px-6 py-3">
+                    <h3 class="text-xs font-bold text-emerald-700 uppercase tracking-widest">Time-Saving Tags by Month
+                        (Positive)</h3>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left">
+                        <thead class="bg-enterprise-50 border-b border-enterprise-200">
+                            <tr>
+                                <th class="px-6 py-3 text-xs font-bold text-enterprise-500 uppercase tracking-wider">Tag
+                                </th>
+                                <th
+                                    class="px-6 py-3 text-xs font-bold text-enterprise-500 uppercase tracking-wider text-right">
+                                    Nov 2025</th>
+                                <th
+                                    class="px-6 py-3 text-xs font-bold text-enterprise-500 uppercase tracking-wider text-right">
+                                    Dec 2025</th>
+                                <th
+                                    class="px-6 py-3 text-xs font-bold text-enterprise-500 uppercase tracking-wider text-right">
+                                    Jan 2026</th>
+                            </tr>
+                        </thead>
+                        <tbody id="quarter-time-body" class="divide-y divide-enterprise-100"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Quarter insight -->
+            <div class="bg-indigo-50 border border-indigo-200 rounded-lg p-4 text-sm text-enterprise-700">
+                <strong class="text-indigo-800">📊 Quarter Insight:</strong>
+                <code class="bg-white px-1 rounded text-xs">Incorrect</code> share is trending down (44% → 32%), a
+                positive sign.
+                However, <code class="bg-white px-1 rounded text-xs">Incomplete</code> spiked sharply in Jan (29%) and
+                <code class="bg-white px-1 rounded text-xs">Data Source Quality</code> grew steadily — suggesting the
+                document corpus may need attention.
+            </div>
+        </section>
+
+        <!-- Key Takeaways -->
+        <section class="space-y-4">
+            <h2 class="text-lg font-bold text-enterprise-800 border-l-4 border-enterprise-800 pl-3">
+                Key Takeaways
+            </h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="bg-white p-6 rounded-lg border border-enterprise-200 shadow-sm space-y-3">
+                    <div class="flex items-center gap-2">
+                        <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+                        <h3 class="text-xs font-bold text-enterprise-400 uppercase tracking-widest">Positive Trends</h3>
+                    </div>
+                    <ul
+                        class="text-sm text-enterprise-600 leading-relaxed space-y-2 list-disc pl-4 marker:text-emerald-400">
+                        <li><strong>Feb 2026 is trending strong</strong> — <span
+                                class="text-emerald-700 font-bold">60.2%</span> positive, best since Aug 2025</li>
+                        <li>Last 3 active days (Feb 5–7) averaged <span class="text-emerald-700 font-bold">72%+</span>
+                            positive</li>
+                        <li><code class="bg-enterprise-100 px-1 rounded text-xs">Incorrect</code> tag share trending
+                            <strong>down</strong> (44% → 32%) quarter over quarter
+                        </li>
+                        <li>22% of positive ratings report <strong>16+ min saved</strong></li>
+                    </ul>
+                </div>
+                <div class="bg-white p-6 rounded-lg border border-enterprise-200 shadow-sm space-y-3">
+                    <div class="flex items-center gap-2">
+                        <span class="w-2 h-2 rounded-full bg-amber-500"></span>
+                        <h3 class="text-xs font-bold text-enterprise-400 uppercase tracking-widest">Areas to Watch</h3>
+                    </div>
+                    <ul
+                        class="text-sm text-enterprise-600 leading-relaxed space-y-2 list-disc pl-4 marker:text-amber-400">
+                        <li><strong>Average positive rate is 51.6%</strong> — signaling room for improvement</li>
+                        <li><strong>Dec 2025 was the low point</strong> at <span
+                                class="text-rose-700 font-bold">41.1%</span></li>
+                        <li><code class="bg-enterprise-100 px-1 rounded text-xs">Incorrect</code> + <code
+                                class="bg-enterprise-100 px-1 rounded text-xs">Incomplete</code> = <strong>61%</strong>
+                            of all constructive feedback</li>
+                        <li><code class="bg-enterprise-100 px-1 rounded text-xs">Incomplete</code> spiked in Jan; <code
+                                class="bg-enterprise-100 px-1 rounded text-xs">Data Source Quality</code> grew steadily
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- Cost Analysis Table Section -->
+        <section class="space-y-4">
+            <h2 class="text-lg font-bold text-enterprise-800 border-l-4 border-emerald-600 pl-3">
+                Cost Efficiency Analysis
+            </h2>
+            <div class="bg-white rounded-lg shadow-sm border border-enterprise-200 overflow-hidden ring-1 ring-black/5">
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left">
+                        <thead class="bg-enterprise-50 border-b border-enterprise-200">
+                            <tr>
+                                <th class="px-6 py-3 text-xs font-bold text-enterprise-500 uppercase tracking-wider">
+                                    Month</th>
+                                <th
+                                    class="px-6 py-3 text-xs font-bold text-enterprise-500 uppercase tracking-wider text-right">
+                                    Date Range (End)</th>
+                                <th
+                                    class="px-6 py-3 text-xs font-bold text-enterprise-500 uppercase tracking-wider text-right">
+                                    Azure Total Cost</th>
+                                <th
+                                    class="px-6 py-3 text-xs font-bold text-enterprise-500 uppercase tracking-wider text-right">
+                                    Total Queries</th>
+                                <th
+                                    class="px-6 py-3 text-xs font-bold text-enterprise-500 uppercase tracking-wider text-right">
+                                    Cost per Query</th>
+                            </tr>
+                        </thead>
+                        <tbody id="cost-table-body" class="divide-y divide-enterprise-100">
+                            <!-- JS will populate this -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+    </div>
+
+    <!-- Footer -->
+    <footer class="bg-white border-t border-enterprise-200 mt-12">
+        <div class="max-w-5xl mx-auto px-6 py-8 flex justify-between items-center">
+            <div class="flex items-center gap-4">
+                <span class="text-enterprise-900 font-bold tracking-tight text-sm">AGILENT <span
+                        class="font-normal text-enterprise-500">SAGE</span></span>
+                <span class="h-4 w-px bg-enterprise-200"></span>
+                <span class="text-xs text-enterprise-400">© 2026 Agilent Technologies, Inc.</span>
+            </div>
+            <div class="text-[10px] text-enterprise-300 uppercase tracking-widest font-medium">
+                Confidential — Internal Use Only
+            </div>
+        </div>
+    </footer>
+
+    <!-- Logic -->
+    <script>
+        // Usage Data
+        const usageData = [
+            { month: '2025-07', organic: 4478, pct: '--' },
+            { month: '2025-08', organic: 7090, pct: '+58.3%', quarterEnd: false },
+            { month: '2025-09', organic: 6692, pct: '-5.6%', quarterEnd: false },
+            { month: '2025-10', organic: 5797, pct: '-13.4%', quarterEnd: true, quarterTotal: 19579, quarterLabel: 'Aug-Sep-Oct' },
+            { month: '2025-11', organic: 5236, pct: '-9.7%', isTesting: true, quarterEnd: false },
+            { month: '2025-12', organic: 4748, pct: '-9.3%', isTesting: true, quarterEnd: false },
+            { month: '2026-01', organic: 6012, pct: '+26.6%', isTesting: true, quarterEnd: true, quarterTotal: 20996, quarterLabel: 'Nov-Dec-Jan' },
+            { month: '2026-02*', organic: 1612, pct: '--', isPartial: true },
+        ];
+
+        // Feedback Data: Month-over-Month Positive vs Constructive
+        const feedbackData = [
+            { month: "Jul '25", positive: 157, constructive: 148, total: 305, posPct: "51.5%", trendPp: "—", status: "neutral" },
+            { month: "Aug '25", positive: 212, constructive: 143, total: 355, posPct: "59.7%", trendPp: "▲ +8.2pp", status: "success" },
+            { month: "Sep '25", positive: 149, constructive: 131, total: 280, posPct: "53.2%", trendPp: "▼ -6.5pp", status: "warning" },
+            { month: "Oct '25", positive: 104, constructive: 128, total: 232, posPct: "44.8%", trendPp: "▼ -8.4pp", status: "danger" },
+            { month: "Nov '25", positive: 74, constructive: 67, total: 141, posPct: "52.5%", trendPp: "▲ +7.7pp", status: "success" },
+            { month: "Dec '25", positive: 51, constructive: 73, total: 124, posPct: "41.1%", trendPp: "▼ -11.4pp", status: "danger" },
+            { month: "Jan '26", positive: 102, constructive: 126, total: 228, posPct: "44.7%", trendPp: "▲ +3.6pp", status: "neutral" },
+            { month: "Feb '26*", positive: 71, constructive: 47, total: 118, posPct: "60.2%", trendPp: "▲ +15.5pp", status: "success" },
+        ];
+
+        // Daily Breakdown Data (Jan 28 – Feb 9)
+        const dailyData = [
+            { date: 'Jan 28', day: 'Tue', pos: 14, con: 14, total: 28, pct: '50.0%' },
+            { date: 'Jan 29', day: 'Wed', pos: 9, con: 11, total: 20, pct: '45.0%' },
+            { date: 'Jan 30', day: 'Thu', pos: 6, con: 6, total: 12, pct: '50.0%' },
+            { date: 'Jan 31', day: 'Fri', pos: 0, con: 0, total: 0, pct: '—' },
+            { date: 'Feb 1', day: 'Sat', pos: 2, con: 0, total: 2, pct: '100.0%' },
+            { date: 'Feb 2', day: 'Sun', pos: 5, con: 12, total: 17, pct: '29.4%' },
+            { date: 'Feb 3', day: 'Mon', pos: 6, con: 4, total: 10, pct: '60.0%' },
+            { date: 'Feb 4', day: 'Tue', pos: 10, con: 11, total: 21, pct: '47.6%' },
+            { date: 'Feb 5', day: 'Wed', pos: 23, con: 13, total: 36, pct: '63.9%' },
+            { date: 'Feb 6', day: 'Thu', pos: 11, con: 5, total: 16, pct: '68.8%' },
+            { date: 'Feb 7', day: 'Fri', pos: 14, con: 2, total: 16, pct: '87.5%' },
+            { date: 'Feb 8', day: 'Sat', pos: 0, con: 0, total: 0, pct: '—' },
+            { date: 'Feb 9', day: 'Sun', pos: 0, con: 0, total: 0, pct: '—' },
+        ];
+
+        // Tag Data
+        const timeSavingTags = [
+            { tag: '1 to 15 mins', count: 177, pct: '62.8%' },
+            { tag: '16 to 30 mins', count: 31, pct: '11.0%' },
+            { tag: 'Not specified', count: 24, pct: '8.5%' },
+            { tag: '> 60 mins', count: 19, pct: '6.7%' },
+            { tag: 'No time saving', count: 18, pct: '6.4%' },
+            { tag: '31 to 60 mins', count: 12, pct: '4.3%' },
+        ];
+
+        const qualityThemeTags = [
+            { tag: 'Incorrect', count: 400, pct: '39.4%' },
+            { tag: 'Incomplete', count: 222, pct: '21.9%' },
+            { tag: 'Data Source Quality', count: 153, pct: '15.1%' },
+            { tag: 'Irrelevant', count: 139, pct: '13.7%' },
+            { tag: 'Other Issue', count: 77, pct: '7.6%' },
+            { tag: 'Hard to Understand', count: 23, pct: '2.3%' },
+        ];
+
+        // Quarter Tag Data
+        const quarterQualityTags = [
+            { tag: 'Incorrect', nov: '29 (43.9%)', dec: '38 (42.7%)', jan: '48 (32.0%)', q1: '115', trend: '▼ Improving', trendClass: 'text-emerald-700' },
+            { tag: 'Incomplete', nov: '16 (24.2%)', dec: '14 (15.7%)', jan: '43 (28.7%)', q1: '73', trend: '▲ Worsening', trendClass: 'text-rose-700' },
+            { tag: 'Data Source Quality', nov: '6 (9.1%)', dec: '11 (12.4%)', jan: '22 (14.7%)', q1: '39', trend: '▲ Worsening', trendClass: 'text-rose-700' },
+            { tag: 'Irrelevant', nov: '10 (15.2%)', dec: '19 (21.3%)', jan: '20 (13.3%)', q1: '49', trend: '▼ Improving', trendClass: 'text-emerald-700' },
+            { tag: 'Other Issue', nov: '5 (7.6%)', dec: '5 (5.6%)', jan: '8 (5.3%)', q1: '18', trend: '— Stable', trendClass: 'text-enterprise-500' },
+            { tag: 'Hard to Understand', nov: '0', dec: '2 (2.2%)', jan: '8 (5.3%)', q1: '10', trend: '▲ Worsening', trendClass: 'text-rose-700' },
+            { tag: 'Total constructive', nov: '67', dec: '73', jan: '126', q1: '266', trend: '▲ Volume up', trendClass: 'text-rose-700', isBold: true },
+        ];
+
+        const quarterTimeTags = [
+            { tag: '1 to 15 mins', nov: '7', dec: '29', jan: '61' },
+            { tag: '16 to 30 mins', nov: '—', dec: '6', jan: '17' },
+            { tag: '31 to 60 mins', nov: '2', dec: '—', jan: '4' },
+            { tag: '> 60 mins', nov: '1', dec: '7', jan: '4' },
+            { tag: 'No time saving', nov: '3', dec: '2', jan: '6' },
+            { tag: 'Not specified', nov: '—', dec: '6', jan: '8' },
+            { tag: 'Total positive', nov: '74', dec: '51', jan: '102', isBold: true },
+        ];
+
+        // Overall Feedback per Month (Q1)
+        const quarterOverallData = [
+            { month: 'Nov 2025', positive: 74, constructive: 67, total: 141, posPct: '52.5%' },
+            { month: 'Dec 2025', positive: 51, constructive: 73, total: 124, posPct: '41.1%' },
+            { month: 'Jan 2026', positive: 102, constructive: 126, total: 228, posPct: '44.7%' },
+            { month: 'Q1 Total', positive: 227, constructive: 266, total: 493, posPct: '46.0%', isBold: true },
+        ];
+
+        // Render Usage Table
+        const usageTbody = document.getElementById('usage-table-body');
+        usageData.forEach(row => {
+            const tr = document.createElement('tr');
+            tr.className = "hover:bg-enterprise-50 transition-colors group";
+
+            // Logic for row styling
+            if (row.isTesting) tr.className = "bg-blue-50/30 hover:bg-blue-50/50 transition-colors";
+            if (row.isPartial) tr.className = "bg-enterprise-50/50 italic text-enterprise-400";
+
+            // Helpers
+            const isNegative = row.pct.startsWith('-');
+            const isPositive = row.pct.startsWith('+');
+
+            // Text Colors
+            const pctClass = isPositive ? 'text-emerald-600' : isNegative ? 'text-rose-600' : 'text-enterprise-400';
+            const testingIndicator = row.isTesting ? '<span class="w-1.5 h-1.5 rounded-full bg-blue-400"></span>' : '';
+
+            // Quarter Total Display
+            let quarterCell = '<span class="text-enterprise-300">--</span>';
+            if (row.quarterEnd && row.quarterTotal) {
+                quarterCell = `<div class="flex flex-col items-end">
+                    <span class="font-bold text-emerald-700">${row.quarterTotal.toLocaleString()}</span>
+                    <span class="text-[10px] text-enterprise-400 uppercase tracking-tight">${row.quarterLabel}</span>
+                </div>`;
+            } else if (row.month === '2025-12') {
+                // Special case for Dec 2025 - show testing queries breakdown
+                quarterCell = `<div class="flex flex-col items-end">
+                    <span class="font-medium text-blue-600 text-xs">+5,000 Testing</span>
+                </div>`;
+            }
+
+            tr.innerHTML = `
+                <td class="px-6 py-3 border-r border-transparent">
+                    <div class="flex items-center gap-2">
+                        <span class="font-medium text-enterprise-700 text-sm">${row.month}</span>
+                        ${testingIndicator}
+                    </div>
+                </td>
+                <td class="px-6 py-3 text-right font-medium text-sm text-enterprise-600">
+                    ${row.organic.toLocaleString()}
+                </td>
+                <td class="px-6 py-3 text-right font-medium text-sm ${pctClass}">
+                    ${row.pct}
+                </td>
+                <td class="px-6 py-3 text-right text-sm">
+                    ${quarterCell}
+                </td>
+            `;
+            usageTbody.appendChild(tr);
+        });
+
+        // Render Feedback Table
+        const feedbackTbody = document.getElementById('feedback-table-body');
+
+        const statusColors = {
+            success: "bg-emerald-50 text-emerald-700 border border-emerald-100",
+            neutral: "bg-enterprise-100 text-enterprise-600 border border-enterprise-200",
+            warning: "bg-amber-50 text-amber-700 border border-amber-100",
+            danger: "bg-rose-50 text-rose-700 border border-rose-100",
+            info: "bg-blue-50 text-blue-700 border border-blue-100",
+        };
+
+        feedbackData.forEach(row => {
+            const tr = document.createElement('tr');
+            tr.className = "hover:bg-enterprise-50 transition-colors";
+            const trendUp = row.trendPp.includes('▲');
+            const trendDown = row.trendPp.includes('▼');
+            const trendClass = trendUp ? 'text-emerald-600' : trendDown ? 'text-rose-600' : 'text-enterprise-400';
+
+            tr.innerHTML = `
+                <td class="px-6 py-3 font-semibold text-sm text-enterprise-700">${row.month}</td>
+                <td class="px-6 py-3 text-right text-sm font-medium text-emerald-700">${row.positive}</td>
+                <td class="px-6 py-3 text-right text-sm font-medium text-rose-600">${row.constructive}</td>
+                <td class="px-6 py-3 text-right text-sm font-bold text-enterprise-900">${row.total}</td>
+                <td class="px-6 py-3 text-right text-sm font-bold text-enterprise-700">${row.posPct}</td>
+                <td class="px-6 py-3 text-center">
+                    <span class="px-2 py-0.5 rounded text-[10px] font-bold ${trendClass}">
+                        ${row.trendPp}
+                    </span>
+                </td>
+            `;
+            feedbackTbody.appendChild(tr);
+        });
+
+        // Render Daily Breakdown Table
+        const dailyTbody = document.getElementById('daily-table-body');
+        dailyData.forEach(row => {
+            const tr = document.createElement('tr');
+            tr.className = row.total === 0 ? 'bg-enterprise-50/50 text-enterprise-400 italic' : 'hover:bg-enterprise-50 transition-colors';
+            const pctVal = parseFloat(row.pct);
+            const pctClass = pctVal >= 65 ? 'text-emerald-700 font-bold' : pctVal >= 50 ? 'text-enterprise-700 font-medium' : pctVal > 0 ? 'text-rose-600 font-medium' : 'text-enterprise-400';
+            tr.innerHTML = `
+                <td class="px-6 py-2 font-medium text-sm text-enterprise-700">${row.date}</td>
+                <td class="px-6 py-2 text-sm text-enterprise-500">${row.day}</td>
+                <td class="px-6 py-2 text-right text-sm text-emerald-700">${row.total ? row.pos : '—'}</td>
+                <td class="px-6 py-2 text-right text-sm text-rose-600">${row.total ? row.con : '—'}</td>
+                <td class="px-6 py-2 text-right text-sm font-medium text-enterprise-900">${row.total || '—'}</td>
+                <td class="px-6 py-2 text-right text-sm ${pctClass}">${row.pct}</td>
+            `;
+            dailyTbody.appendChild(tr);
+        });
+
+        // Render Time-Saving Tag Table
+        const timeTbody = document.getElementById('time-tags-body');
+        timeSavingTags.forEach(row => {
+            const tr = document.createElement('tr');
+            tr.className = 'hover:bg-enterprise-50 transition-colors';
+            tr.innerHTML = `
+                <td class="px-6 py-2 text-sm text-enterprise-700">${row.tag}</td>
+                <td class="px-6 py-2 text-right text-sm font-medium text-enterprise-900">${row.count}</td>
+                <td class="px-6 py-2 text-right text-sm text-enterprise-500">${row.pct}</td>
+            `;
+            timeTbody.appendChild(tr);
+        });
+
+        // Render Quality/Theme Tag Table
+        const qualityTbody = document.getElementById('quality-tags-body');
+        qualityThemeTags.forEach(row => {
+            const tr = document.createElement('tr');
+            tr.className = 'hover:bg-enterprise-50 transition-colors';
+            tr.innerHTML = `
+                <td class="px-6 py-2 text-sm text-enterprise-700">${row.tag}</td>
+                <td class="px-6 py-2 text-right text-sm font-medium text-enterprise-900">${row.count}</td>
+                <td class="px-6 py-2 text-right text-sm text-enterprise-500">${row.pct}</td>
+            `;
+            qualityTbody.appendChild(tr);
+        });
+
+        // Render Quarter Quality Tags
+        const qQualTbody = document.getElementById('quarter-quality-body');
+        quarterQualityTags.forEach(row => {
+            const tr = document.createElement('tr');
+            tr.className = 'hover:bg-enterprise-50 transition-colors';
+            const fw = row.isBold ? 'font-bold' : 'font-medium';
+            tr.innerHTML = `
+                <td class="px-6 py-2 text-sm ${fw} text-enterprise-700">${row.tag}</td>
+                <td class="px-6 py-2 text-right text-sm ${fw} text-enterprise-600">${row.nov}</td>
+                <td class="px-6 py-2 text-right text-sm ${fw} text-enterprise-600">${row.dec}</td>
+                <td class="px-6 py-2 text-right text-sm ${fw} text-enterprise-600">${row.jan}</td>
+                <td class="px-6 py-2 text-right text-sm ${fw} text-enterprise-600">${row.q1}</td>
+                <td class="px-6 py-2 text-center text-sm font-bold ${row.trendClass}">${row.trend}</td>
+            `;
+            qQualTbody.appendChild(tr);
+        });
+
+        // Render Quarter Time Tags
+        const qTimeTbody = document.getElementById('quarter-time-body');
+        quarterTimeTags.forEach(row => {
+            const tr = document.createElement('tr');
+            tr.className = 'hover:bg-enterprise-50 transition-colors';
+            const fw = row.isBold ? 'font-bold' : 'font-medium';
+            tr.innerHTML = `
+                <td class="px-6 py-2 text-sm ${fw} text-enterprise-700">${row.tag}</td>
+                <td class="px-6 py-2 text-right text-sm ${fw} text-enterprise-600">${row.nov}</td>
+                <td class="px-6 py-2 text-right text-sm ${fw} text-enterprise-600">${row.dec}</td>
+                <td class="px-6 py-2 text-right text-sm ${fw} text-enterprise-600">${row.jan}</td>
+            `;
+            qTimeTbody.appendChild(tr);
+        });
+
+        // Render Quarter Overall Feedback
+        const qOverallTbody = document.getElementById('quarter-overall-body');
+        quarterOverallData.forEach(row => {
+            const tr = document.createElement('tr');
+            const fw = row.isBold ? 'font-bold' : 'font-medium';
+            tr.className = row.isBold ? 'bg-enterprise-50 hover:bg-enterprise-100 transition-colors' : 'hover:bg-enterprise-50 transition-colors';
+            const pctVal = parseFloat(row.posPct);
+            const pctClass = pctVal >= 50 ? 'text-emerald-700' : 'text-rose-600';
+            tr.innerHTML = `
+                <td class="px-6 py-3 text-sm ${fw} text-enterprise-700">${row.month}</td>
+                <td class="px-6 py-3 text-right text-sm ${fw} text-emerald-700">${row.positive}</td>
+                <td class="px-6 py-3 text-right text-sm ${fw} text-rose-600">${row.constructive}</td>
+                <td class="px-6 py-3 text-right text-sm ${fw} text-enterprise-900">${row.total}</td>
+                <td class="px-6 py-3 text-right text-sm font-bold ${pctClass}">${row.posPct}</td>
+            `;
+            qOverallTbody.appendChild(tr);
+        });
+
+        // Cost Data
+        const costData = [
+            { month: "Nov/2025", date: "Sun Nov 30 2025", cost: "$1,237.65", queries: "5,236", cpq: "$0.24" },
+            { month: "Dec/2025", date: "Wed Dec 31 2025", cost: "$1,479.99", queries: "4,748", cpq: "$0.31" },
+            { month: "Jan/2026", date: "Sat Jan 31 2026", cost: "$1,432.29", queries: "6,012", cpq: "$0.24" },
+            { month: "Feb/2026", date: "Sat Feb 28 2026", cost: "$211.24", queries: "1,612", cpq: "$0.26" },
+        ];
+
+        // Render Cost Table
+        const costTbody = document.getElementById('cost-table-body');
+        costData.forEach(row => {
+            const tr = document.createElement('tr');
+            tr.className = "hover:bg-enterprise-50 transition-colors";
+
+            // Add badge for active month (February)
+            const monthBadge = row.month === "Feb/2026"
+                ? '<span class="ml-2 bg-amber-50 text-amber-700 text-[10px] font-bold px-1.5 py-0.5 rounded border border-amber-200 uppercase tracking-tight">Active</span>'
+                : '';
+
+            tr.innerHTML = `
+                <td class="px-6 py-3 font-semibold text-sm text-enterprise-700 flex items-center">${row.month}${monthBadge}</td>
+                <td class="px-6 py-3 text-right text-enterprise-400 text-xs font-mono">${row.date}</td>
+                <td class="px-6 py-3 text-right font-medium text-sm text-enterprise-900">${row.cost}</td>
+                <td class="px-6 py-3 text-right text-sm text-enterprise-600">${row.queries}</td>
+                <td class="px-6 py-3 text-right font-bold text-sm text-emerald-700">${row.cpq}</td>
+            `;
+            costTbody.appendChild(tr);
+        });
+        // ── Daily Feedback Chart ──
+        const chartLabels = dailyData.map(d => d.date);
+        const chartPos = dailyData.map(d => d.pos);
+        const chartCon = dailyData.map(d => d.con);
+        const chartPct = dailyData.map(d => d.total > 0 ? parseFloat(((d.pos / d.total) * 100).toFixed(1)) : null);
+
+        const ctx = document.getElementById('dailyFeedbackChart').getContext('2d');
+        new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: chartLabels,
+                datasets: [
+                    {
+                        label: '👍 Positive',
+                        data: chartPos,
+                        backgroundColor: 'rgba(16, 185, 129, 0.7)',
+                        borderColor: 'rgb(16, 185, 129)',
+                        borderWidth: 1,
+                        borderRadius: 2,
+                        stack: 'feedback',
+                        order: 2,
+                    },
+                    {
+                        label: '👎 Constructive',
+                        data: chartCon,
+                        backgroundColor: 'rgba(244, 63, 94, 0.55)',
+                        borderColor: 'rgb(244, 63, 94)',
+                        borderWidth: 1,
+                        borderRadius: 2,
+                        stack: 'feedback',
+                        order: 3,
+                    },
+                    {
+                        label: 'Positive %',
+                        data: chartPct,
+                        type: 'line',
+                        yAxisID: 'yPct',
+                        borderColor: '#0052C2',
+                        backgroundColor: 'rgba(0, 82, 194, 0.1)',
+                        borderWidth: 2.5,
+                        pointRadius: 4,
+                        pointBackgroundColor: '#0052C2',
+                        pointBorderColor: '#fff',
+                        pointBorderWidth: 2,
+                        tension: 0.3,
+                        fill: false,
+                        spanGaps: true,
+                        order: 1,
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                interaction: { mode: 'index', intersect: false },
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: {
+                            usePointStyle: true,
+                            pointStyle: 'rectRounded',
+                            padding: 16,
+                            font: { family: 'Inter, sans-serif', size: 11 }
+                        }
+                    },
+                    tooltip: {
+                        backgroundColor: 'rgba(15, 23, 42, 0.9)',
+                        titleFont: { family: 'Inter, sans-serif', size: 12 },
+                        bodyFont: { family: 'Inter, sans-serif', size: 11 },
+                        callbacks: {
+                            label: function (ctx) {
+                                if (ctx.dataset.yAxisID === 'yPct') return `Positive: ${ctx.parsed.y}%`;
+                                return `${ctx.dataset.label}: ${ctx.parsed.y}`;
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    x: {
+                        grid: { display: false },
+                        ticks: { font: { family: 'Inter, sans-serif', size: 10 }, color: '#6b7280' }
+                    },
+                    y: {
+                        position: 'left',
+                        title: { display: true, text: 'Feedback Count', font: { family: 'Inter, sans-serif', size: 10, weight: 'bold' }, color: '#9ca3af' },
+                        grid: { color: 'rgba(0,0,0,0.04)' },
+                        ticks: { font: { family: 'Inter, sans-serif', size: 10 }, color: '#6b7280', stepSize: 5 },
+                        beginAtZero: true,
+                    },
+                    yPct: {
+                        position: 'right',
+                        title: { display: true, text: 'Positive %', font: { family: 'Inter, sans-serif', size: 10, weight: 'bold' }, color: '#0052C2' },
+                        grid: { drawOnChartArea: false },
+                        ticks: {
+                            font: { family: 'Inter, sans-serif', size: 10 },
+                            color: '#0052C2',
+                            callback: v => v + '%',
+                            stepSize: 20
+                        },
+                        min: 0,
+                        max: 100,
+                    }
+                }
+            }
+        });
+    </script>
+</body>
+
+</html>

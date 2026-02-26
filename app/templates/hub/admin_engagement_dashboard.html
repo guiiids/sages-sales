@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard 3: Engagement Trends</title>
+    <link rel="icon" type="image/png" href="/static/nav_3.png">
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <style>
+        :root {
+            --ink: #0a2940;
+            --muted: #5c6b77;
+            --panel: #f8f9fb;
+            --border: #d9dde5;
+            --primary: #0b63d1;
+            --secondary: #f59e0b;
+        }
+        body { font-family: "Segoe UI", Tahoma, Arial, sans-serif; background: #fff; margin: 0; color: var(--ink); }
+        .page { max-width: 1200px; margin: 0 auto; padding: 28px 20px 36px; }
+        .title { font-size: 28px; font-weight: 700; margin: 0 0 6px; }
+        .subtitle { font-size: 16px; color: var(--muted); margin: 0 0 18px; }
+        .section-title { font-size: 14px; font-weight: 700; letter-spacing: 0.04em; margin: 24px 0 10px; }
+        .chart-card { background: var(--panel); border: 2px solid var(--border); border-radius: 12px; padding: 14px; }
+        .chart-wrap { height: 310px; }
+        .metrics { display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; margin-top: 20px; }
+        .metric { border-radius: 10px; padding: 12px 14px; background: #fff7ed; }
+        .metric.green { background: #ecfdf3; }
+        .metric.blue { background: #eaf2ff; }
+        .metric.yellow { background: #fff8e8; }
+        .metric.gray { background: #f3f4f6; }
+        .metric-label { font-size: 12px; font-weight: 700; color: #a16207; margin-bottom: 6px; }
+        .metric.green .metric-label { color: #047857; }
+        .metric.blue .metric-label { color: #1d4ed8; }
+        .metric.yellow .metric-label { color: #b45309; }
+        .metric.gray .metric-label { color: #374151; }
+        .metric-value { font-size: 22px; font-weight: 800; }
+        .metric-diff { margin-top: 6px; font-size: 12px; color: #111827; }
+        @media (max-width: 1100px) {
+            .metrics { grid-template-columns: repeat(2, 1fr); }
+        }
+        @media (max-width: 640px) {
+            .metrics { grid-template-columns: 1fr; }
+        }
+    </style>
+
+     <!-- Tailwind -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Roboto', 'sans-serif'],
+                        condensed: ['Roboto Condensed', 'sans-serif'],
+                    },
+                    colors: {
+                        agilent: { blue: '#0085D5', dark: '#0B3F63' }
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body>
+    <nav
+        class="flex-none bg-white border-b border-slate-200 h-16 flex items-center justify-between px-6 sticky top-0 z-50">
+        <div class="flex items-center gap-3">
+            <svg class="h-5 text-agilent-blue" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M12 2L14.4 9.6H22L15.8 14.1L18.2 21.7L12 17.2L5.8 21.7L8.2 14.1L2 9.6H9.6L12 2Z" />
+            </svg>
+            <span class="text-lg font-thin text-slate-800">SAGE <span
+                    class="font-normal text-slate-400">Engagement Trends</span></span>
+        </div>
+        <div class="flex items-center gap-4">
+            <a href="/admin"
+                class="text-sm font-condensed font-bold uppercase tracking-wide text-slate-500 hover:text-agilent-blue transition">
+                <i class="ph ph-arrow-left mr-1"></i> Back to Hub
+            </a>
+        </div>
+    </nav>
+
+    <div class="page">
+
+        <div class="section-title">WEEKLY ACTIVE USERS TREND</div>
+        <div class="chart-card">
+            <div class="chart-wrap">
+                <canvas id="engagement-chart"></canvas>
+            </div>
+        </div>
+
+        <div class="metrics" id="metrics">
+            Loading...
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+            try {
+                const response = await fetch('/admin/engagement-metrics-data');
+                const data = await response.json();
+
+                // Populate Chart
+                const ctx = document.getElementById('engagement-chart');
+                if (ctx) {
+                    new Chart(ctx, {
+                        type: 'line',
+                        data: {
+                            labels: data.labels,
+                            datasets: [
+                                {
+                                    label: 'Weekly Active Users',
+                                    data: data.weekly_active_users,
+                                    borderColor: '#0b63d1',
+                                    backgroundColor: 'rgba(11, 99, 209, 0.08)',
+                                    borderWidth: 3,
+                                    pointRadius: 3,
+                                    tension: 0.3
+                                },
+                                {
+                                    label: 'Total Queries',
+                                    data: data.weekly_queries,
+                                    borderColor: '#f59e0b',
+                                    backgroundColor: 'rgba(245, 158, 11, 0.08)',
+                                    borderWidth: 3,
+                                    pointRadius: 3,
+                                    tension: 0.3
+                                }
+                            ]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            plugins: {
+                                legend: {
+                                    position: 'top',
+                                    labels: { boxWidth: 10, boxHeight: 10 }
+                                },
+                                tooltip: { mode: 'index', intersect: false }
+                            },
+                            scales: {
+                                y: {
+                                    beginAtZero: true,
+                                    grid: { color: '#d9dde5', borderDash: [3, 4] }
+                                },
+                                x: {
+                                    grid: { display: false }
+                                }
+                            }
+                        }
+                    });
+                }
+
+                // Populate Metrics
+                const metricsContainer = document.getElementById('metrics');
+                metricsContainer.innerHTML = `
+                    <div class="metric">
+                        <div class="metric-label">Total Queries/Week</div>
+                        <div class="metric-value">${data.total_queries_week}</div>
+                        <div class="metric-diff">${data.total_queries_week_diff !== null ? `▲ ${data.total_queries_week_diff}` : 'NA'}</div>
+                    </div>
+                    <div class="metric green">
+                        <div class="metric-label">Avg Sessions/Week</div>
+                        <div class="metric-value">${data.avg_sessions_week}</div>
+                        <div class="metric-diff">${data.avg_sessions_week_diff !== null ? `▲ ${data.avg_sessions_week_diff}` : 'NA'}</div>
+                    </div>
+                    <div class="metric blue">
+                        <div class="metric-label">Avg Messages/Session</div>
+                        <div class="metric-value">${data.avg_messages_session}</div>
+                        <div class="metric-diff">${data.avg_messages_session_diff !== null ? `▲ ${data.avg_messages_session_diff}` : 'NA'}</div>
+                    </div>
+                    <div class="metric yellow">
+                        <div class="metric-label">Deep Mode Adoption</div>
+                        <div class="metric-value">${data.deep_mode_adoption}</div>
+                        <div class="metric-diff">${data.deep_mode_adoption_diff}</div>
+                    </div>
+                    <div class="metric gray">
+                        <div class="metric-label">Multi-turn Rate</div>
+                        <div class="metric-value">${data.multi_turn_rate}</div>
+                        <div class="metric-diff">${data.multi_turn_rate_diff}</div>
+                    </div>
+                `;
+            } catch (error) {
+                console.error('Error loading engagement metrics data:', error);
+            }
+        });
+    </script>
+</body>
+</html>

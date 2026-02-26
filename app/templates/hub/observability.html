@@ -1,0 +1,1108 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Observability Dashboard | SAGE Platform</title>
+     <link rel="icon" type="image/png" href="/static/nav_3.png">
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Roboto+Condensed:wght@400;700&family=Roboto:wght@100;300;400;500&display=swap"
+        rel="stylesheet">
+
+    <!-- Icons -->
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+
+    <!-- Tailwind -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Roboto', 'sans-serif'],
+                        condensed: ['Roboto Condensed', 'sans-serif'],
+                    },
+                    colors: {
+                        agilent: { blue: '#0085D5', dark: '#0B3F63' }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+
+<body class="bg-slate-50 text-slate-700 min-h-screen flex flex-col">
+
+    <!-- Header -->
+    <nav
+        class="flex-none bg-white border-b border-slate-200 h-16 flex items-center justify-between px-6 sticky top-0 z-50">
+        <div class="flex items-center gap-3">
+            <svg class="h-5 text-agilent-blue" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M12 2L14.4 9.6H22L15.8 14.1L18.2 21.7L12 17.2L5.8 21.7L8.2 14.1L2 9.6H9.6L12 2Z" />
+            </svg>
+            <span class="text-lg font-thin text-slate-800">SAGE <span
+                    class="font-normal text-slate-400">Observability</span></span>
+        </div>
+        <div class="flex items-center gap-4">
+            <a href="/admin"
+                class="text-sm font-condensed font-bold uppercase tracking-wide text-slate-500 hover:text-agilent-blue transition">
+                <i class="ph ph-arrow-left mr-1"></i> Back to Hub
+            </a>
+            <button id="refresh-btn"
+                class="bg-agilent-blue text-white px-4 py-2 rounded shadow hover:bg-agilent-dark transition font-condensed font-bold uppercase tracking-wide text-xs flex items-center gap-2">
+                <i class="ph ph-arrows-clockwise"></i> Refresh
+            </button>
+        </div>
+    </nav>
+
+    <!-- Tab Navigation -->
+    <div class="bg-white border-b border-slate-200 px-6">
+        <div class="flex gap-1 max-w-7xl mx-auto">
+            <button data-tab="overview"
+                class="tab-btn px-5 py-3 text-sm font-condensed font-bold uppercase tracking-wide border-b-2 border-agilent-blue text-agilent-blue transition">
+                <i class="ph ph-chart-pie mr-1"></i> Overview
+            </button>
+            <button data-tab="performance"
+                class="tab-btn px-5 py-3 text-sm font-condensed font-bold uppercase tracking-wide border-b-2 border-transparent text-slate-500 hover:text-agilent-blue transition">
+                <i class="ph ph-lightning mr-1"></i> Performance
+            </button>
+            <button data-tab="costs"
+                class="tab-btn px-5 py-3 text-sm font-condensed font-bold uppercase tracking-wide border-b-2 border-transparent text-slate-500 hover:text-agilent-blue transition">
+                <i class="ph ph-currency-dollar mr-1"></i> Costs
+            </button>
+            <button data-tab="feedback"
+                class="tab-btn px-5 py-3 text-sm font-condensed font-bold uppercase tracking-wide border-b-2 border-transparent text-slate-500 hover:text-agilent-blue transition">
+                <i class="ph ph-thumbs-up mr-1"></i> Feedback
+            </button>
+            <button data-tab="quality"
+                class="tab-btn px-5 py-3 text-sm font-condensed font-bold uppercase tracking-wide border-b-2 border-transparent text-slate-500 hover:text-agilent-blue transition">
+                <i class="ph ph-check-circle mr-1"></i> Quality
+            </button>
+            <button data-tab="experimental"
+                class="tab-btn px-5 py-3 text-sm font-condensed font-bold uppercase tracking-wide border-b-2 border-transparent text-slate-500 hover:text-agilent-blue transition">
+                <i class="ph ph-flask mr-1"></i> Experimental Mode
+            </button>
+        </div>
+    </div>
+
+    <!-- Date Range Filter -->
+    <div class="bg-white border-b border-slate-100 px-6 py-3">
+        <div class="max-w-7xl mx-auto flex items-center gap-4">
+            <span class="text-xs font-condensed text-slate-400 uppercase">Time Range:</span>
+            <select id="date-range" class="text-sm border border-slate-200 rounded px-3 py-1.5 font-condensed">
+                <option value="24h">Last 24 Hours</option>
+                <option value="7d" selected>Last 7 Days</option>
+                <option value="30d">Last 30 Days</option>
+                <option value="all">All Time</option>
+            </select>
+            <span id="last-updated" class="text-xs text-slate-400 ml-auto">
+                <i class="ph ph-clock mr-1"></i> Updated: --
+            </span>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <main class="flex-grow max-w-7xl w-full mx-auto px-6 py-8">
+
+        <!-- OVERVIEW TAB -->
+        <div id="tab-overview" class="tab-content">
+            <!-- KPI Cards Row -->
+            <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 mb-8">
+                <!-- Total Queries -->
+                <div
+                    class="bg-white border border-slate-100 rounded-xl p-5 shadow-sm hover:shadow-md transition-shadow">
+                    <div class="flex items-center gap-2 mb-2">
+                        <i class="ph ph-chat-circle-text text-agilent-blue text-lg"></i>
+                        <span class="text-xs font-condensed text-slate-400 uppercase">Queries</span>
+                    </div>
+                    <div class="text-3xl font-thin text-slate-800" id="kpi-queries">--</div>
+                    <div class="text-xs text-green-500 mt-1" id="kpi-queries-trend">
+                        <i class="ph ph-trend-up"></i> <span>--</span>
+                    </div>
+                </div>
+
+                <!-- Avg Latency -->
+                <div
+                    class="bg-white border border-slate-100 rounded-xl p-5 shadow-sm hover:shadow-md transition-shadow">
+                    <div class="flex items-center gap-2 mb-2">
+                        <i class="ph ph-timer text-agilent-blue text-lg"></i>
+                        <span class="text-xs font-condensed text-slate-400 uppercase">Avg Latency</span>
+                    </div>
+                    <div class="text-3xl font-thin text-slate-800" id="kpi-latency">--</div>
+                    <div class="text-xs text-slate-400 mt-1">milliseconds</div>
+                </div>
+
+                <!-- User Satisfaction -->
+                <div
+                    class="bg-white border border-slate-100 rounded-xl p-5 shadow-sm hover:shadow-md transition-shadow">
+                    <div class="flex items-center gap-2 mb-2">
+                        <i class="ph ph-smiley text-agilent-blue text-lg"></i>
+                        <span class="text-xs font-condensed text-slate-400 uppercase">Satisfaction</span>
+                    </div>
+                    <div class="text-3xl font-thin text-slate-800" id="kpi-satisfaction">--</div>
+                    <div class="text-xs text-slate-400 mt-1">positive rate</div>
+                </div>
+
+                <!-- Today's Cost -->
+                <div
+                    class="bg-white border border-slate-100 rounded-xl p-5 shadow-sm hover:shadow-md transition-shadow">
+                    <div class="flex items-center gap-2 mb-2">
+                        <i class="ph ph-currency-dollar text-agilent-blue text-lg"></i>
+                        <span class="text-xs font-condensed text-slate-400 uppercase">Cost</span>
+                    </div>
+                    <div class="text-3xl font-thin text-slate-800" id="kpi-cost">--</div>
+                    <div class="text-xs text-slate-400 mt-1">USD</div>
+                </div>
+
+                <!-- Total Tokens -->
+                <div
+                    class="bg-white border border-slate-100 rounded-xl p-5 shadow-sm hover:shadow-md transition-shadow">
+                    <div class="flex items-center gap-2 mb-2">
+                        <i class="ph ph-coins text-agilent-blue text-lg"></i>
+                        <span class="text-xs font-condensed text-slate-400 uppercase">Tokens</span>
+                    </div>
+                    <div class="text-3xl font-thin text-slate-800" id="kpi-tokens">--</div>
+                    <div class="text-xs text-slate-400 mt-1">total used</div>
+                </div>
+
+                <!-- Streaming Rate -->
+                <div
+                    class="bg-white border border-slate-100 rounded-xl p-5 shadow-sm hover:shadow-md transition-shadow">
+                    <div class="flex items-center gap-2 mb-2">
+                        <i class="ph ph-broadcast text-agilent-blue text-lg"></i>
+                        <span class="text-xs font-condensed text-slate-400 uppercase">Streaming</span>
+                    </div>
+                    <div class="text-3xl font-thin text-slate-800" id="kpi-streaming">--</div>
+                    <div class="text-xs text-slate-400 mt-1">adoption rate</div>
+                </div>
+            </div>
+
+            <!-- Charts Row -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+                <!-- Queries Over Time -->
+                <div class="bg-white border border-slate-100 rounded-xl p-6 shadow-sm">
+                    <h3 class="text-sm font-condensed font-bold text-agilent-blue uppercase tracking-wide mb-4">
+                        <i class="ph ph-chart-line mr-1"></i> Query Volume
+                    </h3>
+                    <div class="h-64">
+                        <canvas id="chart-queries"></canvas>
+                    </div>
+                </div>
+
+                <!-- Latency Distribution -->
+                <div class="bg-white border border-slate-100 rounded-xl p-6 shadow-sm">
+                    <h3 class="text-sm font-condensed font-bold text-agilent-blue uppercase tracking-wide mb-4">
+                        <i class="ph ph-chart-bar mr-1"></i> Latency Breakdown
+                    </h3>
+                    <div class="h-64">
+                        <canvas id="chart-latency"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Model Performance & Feedback -->
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <!-- Model Usage -->
+                <div class="bg-white border border-slate-100 rounded-xl p-6 shadow-sm">
+                    <h3 class="text-sm font-condensed font-bold text-agilent-blue uppercase tracking-wide mb-4">
+                        <i class="ph ph-robot mr-1"></i> Model Usage
+                    </h3>
+                    <div class="h-48">
+                        <canvas id="chart-models"></canvas>
+                    </div>
+                </div>
+
+                <!-- Token Split -->
+                <div class="bg-white border border-slate-100 rounded-xl p-6 shadow-sm">
+                    <h3 class="text-sm font-condensed font-bold text-agilent-blue uppercase tracking-wide mb-4">
+                        <i class="ph ph-pie-chart mr-1"></i> Token Distribution
+                    </h3>
+                    <div class="h-48">
+                        <canvas id="chart-tokens"></canvas>
+                    </div>
+                </div>
+
+                <!-- Feedback Tags -->
+                <div class="bg-white border border-slate-100 rounded-xl p-6 shadow-sm">
+                    <h3 class="text-sm font-condensed font-bold text-agilent-blue uppercase tracking-wide mb-4">
+                        <i class="ph ph-tag mr-1"></i> Top Feedback Tags
+                    </h3>
+                    <div id="feedback-tags" class="space-y-2">
+                        <!-- Tags will be populated here -->
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- PERFORMANCE TAB -->
+        <div id="tab-performance" class="tab-content hidden">
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+                <!-- Latency Waterfall -->
+                <div class="bg-white border border-slate-100 rounded-xl p-6 shadow-sm lg:col-span-3">
+                    <h3 class="text-sm font-condensed font-bold text-agilent-blue uppercase tracking-wide mb-4">
+                        <i class="ph ph-flow-arrow mr-1"></i> Pipeline Latency Breakdown
+                    </h3>
+                    <div class="h-80">
+                        <canvas id="chart-waterfall"></canvas>
+                    </div>
+                    <div class="flex justify-center gap-6 mt-4 text-xs text-slate-500">
+                        <span class="flex items-center gap-1"><span class="w-3 h-3 bg-blue-400 rounded"></span>
+                            Search</span>
+                        <span class="flex items-center gap-1"><span class="w-3 h-3 bg-purple-400 rounded"></span>
+                            Rerank</span>
+                        <span class="flex items-center gap-1"><span class="w-3 h-3 bg-green-400 rounded"></span>
+                            LLM</span>
+                    </div>
+                </div>
+
+                <!-- Percentiles -->
+                <div class="bg-white border border-slate-100 rounded-xl p-6 shadow-sm">
+                    <h3 class="text-sm font-condensed font-bold text-agilent-blue uppercase tracking-wide mb-4">
+                        <i class="ph ph-chart-scatter mr-1"></i> Latency Percentiles
+                    </h3>
+                    <div class="space-y-4">
+                        <div class="flex items-center justify-between">
+                            <span class="text-sm text-slate-600">p50 (Median)</span>
+                            <span class="text-lg font-thin text-slate-800" id="perf-p50">-- ms</span>
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <span class="text-sm text-slate-600">p90</span>
+                            <span class="text-lg font-thin text-slate-800" id="perf-p90">-- ms</span>
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <span class="text-sm text-slate-600">p95</span>
+                            <span class="text-lg font-thin text-slate-800" id="perf-p95">-- ms</span>
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <span class="text-sm text-slate-600">p99</span>
+                            <span class="text-lg font-thin text-slate-800" id="perf-p99">-- ms</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Throughput -->
+                <div class="bg-white border border-slate-100 rounded-xl p-6 shadow-sm">
+                    <h3 class="text-sm font-condensed font-bold text-agilent-blue uppercase tracking-wide mb-4">
+                        <i class="ph ph-gauge mr-1"></i> Throughput Stats
+                    </h3>
+                    <div class="space-y-4">
+                        <div class="flex items-center justify-between">
+                            <span class="text-sm text-slate-600">Queries/Hour (Avg)</span>
+                            <span class="text-lg font-thin text-slate-800" id="perf-qph">--</span>
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <span class="text-sm text-slate-600">Peak Hour</span>
+                            <span class="text-lg font-thin text-slate-800" id="perf-peak">--</span>
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <span class="text-sm text-slate-600">Quiet Hour</span>
+                            <span class="text-lg font-thin text-slate-800" id="perf-quiet">--</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- OpenAI Usage Logs -->
+                <div class="bg-white border border-slate-100 rounded-xl p-6 shadow-sm lg:col-span-3">
+                    <h3 class="text-sm font-condensed font-bold text-agilent-blue uppercase tracking-wide mb-4">
+                        <i class="ph ph-list-dashes mr-1"></i> OpenAI API Usage Logs
+                    </h3>
+                    <div class="overflow-x-auto max-h-96">
+                        <table class="w-full text-sm">
+                            <thead class="sticky top-0 bg-white">
+                                <tr class="border-b border-slate-100 text-left">
+                                    <th class="pb-3 font-condensed text-slate-400 uppercase text-xs">Time</th>
+                                    <th class="pb-3 font-condensed text-slate-400 uppercase text-xs">Model</th>
+                                    <th class="pb-3 font-condensed text-slate-400 uppercase text-xs">Scenario</th>
+                                    <th class="pb-3 font-condensed text-slate-400 uppercase text-xs text-right">Prompt
+                                    </th>
+                                    <th class="pb-3 font-condensed text-slate-400 uppercase text-xs text-right">Compl
+                                    </th>
+                                    <th class="pb-3 font-condensed text-slate-400 uppercase text-xs text-right">Total
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody id="openai-usage-table">
+                                <!-- Will be populated via JS -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- COSTS TAB -->
+        <div id="tab-costs" class="tab-content hidden">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+                <div class="bg-white border border-slate-100 rounded-xl p-5 shadow-sm">
+                    <span class="text-xs font-condensed text-slate-400 uppercase">Total Cost</span>
+                    <div class="text-3xl font-thin text-slate-800 mt-2" id="cost-total">$--</div>
+                </div>
+                <div class="bg-white border border-slate-100 rounded-xl p-5 shadow-sm">
+                    <span class="text-xs font-condensed text-slate-400 uppercase">Prompt Cost</span>
+                    <div class="text-3xl font-thin text-slate-800 mt-2" id="cost-prompt">$--</div>
+                </div>
+                <div class="bg-white border border-slate-100 rounded-xl p-5 shadow-sm">
+                    <span class="text-xs font-condensed text-slate-400 uppercase">Completion Cost</span>
+                    <div class="text-3xl font-thin text-slate-800 mt-2" id="cost-completion">$--</div>
+                </div>
+                <div class="bg-white border border-slate-100 rounded-xl p-5 shadow-sm">
+                    <span class="text-xs font-condensed text-slate-400 uppercase">Cost/Query</span>
+                    <div class="text-3xl font-thin text-slate-800 mt-2" id="cost-per-query">$--</div>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <!-- Cost Over Time -->
+                <div class="bg-white border border-slate-100 rounded-xl p-6 shadow-sm">
+                    <h3 class="text-sm font-condensed font-bold text-agilent-blue uppercase tracking-wide mb-4">
+                        <i class="ph ph-chart-line-up mr-1"></i> Daily Cost Trend
+                    </h3>
+                    <div class="h-64">
+                        <canvas id="chart-cost-trend"></canvas>
+                    </div>
+                </div>
+
+                <!-- Cost by Model -->
+                <div class="bg-white border border-slate-100 rounded-xl p-6 shadow-sm">
+                    <h3 class="text-sm font-condensed font-bold text-agilent-blue uppercase tracking-wide mb-4">
+                        <i class="ph ph-chart-donut mr-1"></i> Cost by Model
+                    </h3>
+                    <div class="h-64">
+                        <canvas id="chart-cost-model"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- FEEDBACK TAB -->
+        <div id="tab-feedback" class="tab-content hidden">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+                <div class="bg-white border border-slate-100 rounded-xl p-5 shadow-sm">
+                    <span class="text-xs font-condensed text-slate-400 uppercase">Total Feedback</span>
+                    <div class="text-3xl font-thin text-slate-800 mt-2" id="fb-total">--</div>
+                </div>
+                <div class="bg-white border border-slate-100 rounded-xl p-5 shadow-sm">
+                    <span class="text-xs font-condensed text-slate-400 uppercase">Positive (👍)</span>
+                    <div class="text-3xl font-thin text-green-600 mt-2" id="fb-positive">--</div>
+                </div>
+                <div class="bg-white border border-slate-100 rounded-xl p-5 shadow-sm">
+                    <span class="text-xs font-condensed text-slate-400 uppercase">Constructive (👎)</span>
+                    <div class="text-3xl font-thin text-amber-600 mt-2" id="fb-negative">--</div>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+                <!-- Feedback Trend -->
+                <div class="bg-white border border-slate-100 rounded-xl p-6 shadow-sm">
+                    <h3 class="text-sm font-condensed font-bold text-agilent-blue uppercase tracking-wide mb-4">
+                        <i class="ph ph-trend-up mr-1"></i> Feedback Over Time
+                    </h3>
+                    <div class="h-64">
+                        <canvas id="chart-feedback-trend"></canvas>
+                    </div>
+                </div>
+
+                <!-- Tag Distribution -->
+                <div class="bg-white border border-slate-100 rounded-xl p-6 shadow-sm">
+                    <h3 class="text-sm font-condensed font-bold text-agilent-blue uppercase tracking-wide mb-4">
+                        <i class="ph ph-list-bullets mr-1"></i> Tag Distribution
+                    </h3>
+                    <div class="h-64">
+                        <canvas id="chart-tags"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Recent Feedback Table -->
+            <div class="bg-white border border-slate-100 rounded-xl p-6 shadow-sm">
+                <h3 class="text-sm font-condensed font-bold text-agilent-blue uppercase tracking-wide mb-4">
+                    <i class="ph ph-chat-centered-text mr-1"></i> Recent Feedback
+                </h3>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-sm">
+                        <thead>
+                            <tr class="border-b border-slate-100 text-left">
+                                <th class="pb-3 font-condensed text-slate-400 uppercase text-xs">Time</th>
+                                <th class="pb-3 font-condensed text-slate-400 uppercase text-xs">Query</th>
+                                <th class="pb-3 font-condensed text-slate-400 uppercase text-xs">Tags</th>
+                                <th class="pb-3 font-condensed text-slate-400 uppercase text-xs">Comment</th>
+                            </tr>
+                        </thead>
+                        <tbody id="feedback-table">
+                            <!-- Will be populated via JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- QUALITY TAB -->
+        <div id="tab-quality" class="tab-content hidden">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+                <div class="bg-white border border-slate-100 rounded-xl p-5 shadow-sm">
+                    <span class="text-xs font-condensed text-slate-400 uppercase">Citation Rate</span>
+                    <div class="text-3xl font-thin text-slate-800 mt-2" id="qual-citation">--%</div>
+                </div>
+                <div class="bg-white border border-slate-100 rounded-xl p-5 shadow-sm">
+                    <span class="text-xs font-condensed text-slate-400 uppercase">Avg Citations/Response</span>
+                    <div class="text-3xl font-thin text-slate-800 mt-2" id="qual-avg-citations">--</div>
+                </div>
+                <div class="bg-white border border-slate-100 rounded-xl p-5 shadow-sm">
+                    <span class="text-xs font-condensed text-slate-400 uppercase">Error Rate</span>
+                    <div class="text-3xl font-thin text-red-500 mt-2" id="qual-error">--%</div>
+                </div>
+                <div class="bg-white border border-slate-100 rounded-xl p-5 shadow-sm">
+                    <span class="text-xs font-condensed text-slate-400 uppercase">Avg Response Length</span>
+                    <div class="text-3xl font-thin text-slate-800 mt-2" id="qual-length">-- chars</div>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <!-- Streaming vs Standard -->
+                <div class="bg-white border border-slate-100 rounded-xl p-6 shadow-sm">
+                    <h3 class="text-sm font-condensed font-bold text-agilent-blue uppercase tracking-wide mb-4">
+                        <i class="ph ph-swap mr-1"></i> Streaming vs Standard
+                    </h3>
+                    <div class="h-64">
+                        <canvas id="chart-streaming"></canvas>
+                    </div>
+                </div>
+
+                <!-- Session Depth -->
+                <div class="bg-white border border-slate-100 rounded-xl p-6 shadow-sm">
+                    <h3 class="text-sm font-condensed font-bold text-agilent-blue uppercase tracking-wide mb-4">
+                        <i class="ph ph-stack mr-1"></i> Session Depth Distribution
+                    </h3>
+                    <div class="h-64">
+                        <canvas id="chart-session-depth"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- EXPERIMENTAL MODE TAB -->
+        <div id="tab-experimental" class="tab-content hidden">
+            <!-- Model Info Banner -->
+            <div
+                class="bg-gradient-to-r from-purple-600 to-agilent-blue text-white rounded-xl p-4 mb-6 flex items-center justify-between">
+                <div class="flex items-center gap-3">
+                    <i class="ph ph-cpu text-2xl"></i>
+                    <div>
+                        <span class="text-xs uppercase opacity-80">Current Model</span>
+                        <div class="text-lg font-bold" id="exp-model">Loading...</div>
+                    </div>
+                </div>
+                <div class="flex gap-6 text-right">
+                    <div>
+                        <span class="text-xs uppercase opacity-80">Prompt Cost</span>
+                        <div class="font-semibold" id="exp-prompt-cost">$--/1M</div>
+                    </div>
+                    <div>
+                        <span class="text-xs uppercase opacity-80">Completion Cost</span>
+                        <div class="font-semibold" id="exp-completion-cost">$--/1M</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- KPI Cards -->
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+                <div class="bg-white border border-slate-100 rounded-xl p-5 shadow-sm">
+                    <span class="text-xs font-condensed text-slate-400 uppercase">Experimental Queries</span>
+                    <div class="text-3xl font-thin text-purple-600 mt-2" id="exp-queries">--</div>
+                </div>
+                <div class="bg-white border border-slate-100 rounded-xl p-5 shadow-sm">
+                    <span class="text-xs font-condensed text-slate-400 uppercase">Production Queries</span>
+                    <div class="text-3xl font-thin text-slate-800 mt-2" id="prod-queries">--</div>
+                </div>
+                <div class="bg-white border border-slate-100 rounded-xl p-5 shadow-sm">
+                    <span class="text-xs font-condensed text-slate-400 uppercase">Adoption Rate</span>
+                    <div class="text-3xl font-thin text-agilent-blue mt-2" id="adoption-rate">--%</div>
+                </div>
+                <div class="bg-white border border-slate-100 rounded-xl p-5 shadow-sm">
+                    <span class="text-xs font-condensed text-slate-400 uppercase">Total Period Cost</span>
+                    <div class="text-3xl font-thin text-green-600 mt-2" id="exp-total-cost">$--</div>
+                </div>
+            </div>
+
+            <!-- Charts Row 1: Persona Distribution + Mode Trend -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+                <div class="bg-white border border-slate-100 rounded-xl p-6 shadow-sm">
+                    <h3 class="text-sm font-condensed font-bold text-agilent-blue uppercase tracking-wide mb-4">
+                        <i class="ph ph-users-three mr-1"></i> Persona Distribution
+                    </h3>
+                    <div class="h-64">
+                        <canvas id="chart-persona-dist"></canvas>
+                    </div>
+                </div>
+
+                <div class="bg-white border border-slate-100 rounded-xl p-6 shadow-sm">
+                    <h3 class="text-sm font-condensed font-bold text-agilent-blue uppercase tracking-wide mb-4">
+                        <i class="ph ph-chart-line mr-1"></i> Mode Trend Over Time
+                    </h3>
+                    <div class="h-64">
+                        <canvas id="chart-mode-trend"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Charts Row 2: Per-Persona Comparisons -->
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+                <div class="bg-white border border-slate-100 rounded-xl p-6 shadow-sm">
+                    <h3 class="text-sm font-condensed font-bold text-agilent-blue uppercase tracking-wide mb-4">
+                        <i class="ph ph-timer mr-1"></i> Avg Latency by Persona
+                    </h3>
+                    <div class="h-48">
+                        <canvas id="chart-latency-persona"></canvas>
+                    </div>
+                </div>
+
+                <div class="bg-white border border-slate-100 rounded-xl p-6 shadow-sm">
+                    <h3 class="text-sm font-condensed font-bold text-agilent-blue uppercase tracking-wide mb-4">
+                        <i class="ph ph-coins mr-1"></i> Avg Tokens by Persona
+                    </h3>
+                    <div class="h-48">
+                        <canvas id="chart-tokens-persona"></canvas>
+                    </div>
+                </div>
+
+                <div class="bg-white border border-slate-100 rounded-xl p-6 shadow-sm">
+                    <h3 class="text-sm font-condensed font-bold text-agilent-blue uppercase tracking-wide mb-4">
+                        <i class="ph ph-currency-dollar mr-1"></i> Cost/Query by Persona
+                    </h3>
+                    <div class="h-48">
+                        <canvas id="chart-cost-persona"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Persona Stats Table -->
+            <div class="bg-white border border-slate-100 rounded-xl p-6 shadow-sm mb-8">
+                <h3 class="text-sm font-condensed font-bold text-agilent-blue uppercase tracking-wide mb-4">
+                    <i class="ph ph-table mr-1"></i> Persona Performance Summary
+                </h3>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-sm">
+                        <thead>
+                            <tr class="border-b border-slate-100 text-left">
+                                <th class="pb-3 font-condensed text-slate-400 uppercase text-xs">Persona</th>
+                                <th class="pb-3 font-condensed text-slate-400 uppercase text-xs">Queries</th>
+                                <th class="pb-3 font-condensed text-slate-400 uppercase text-xs">Avg Latency (ms)</th>
+                                <th class="pb-3 font-condensed text-slate-400 uppercase text-xs">Avg Tokens</th>
+                                <th class="pb-3 font-condensed text-slate-400 uppercase text-xs">Cost/Query ($)</th>
+                            </tr>
+                        </thead>
+                        <tbody id="persona-stats-table">
+                            <!-- Will be populated via JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Feature Configuration Reference -->
+            <div class="bg-white border border-slate-100 rounded-xl p-6 shadow-sm">
+                <h3 class="text-sm font-condensed font-bold text-agilent-blue uppercase tracking-wide mb-4">
+                    <i class="ph ph-sliders mr-1"></i> Persona Feature Configuration
+                </h3>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-sm">
+                        <thead>
+                            <tr class="border-b border-slate-100 text-left">
+                                <th class="pb-3 font-condensed text-slate-400 uppercase text-xs">Feature</th>
+                                <th class="pb-3 font-condensed text-slate-400 uppercase text-xs text-center">Explorer
+                                </th>
+                                <th class="pb-3 font-condensed text-slate-400 uppercase text-xs text-center">
+                                    Intermediate</th>
+                                <th class="pb-3 font-condensed text-slate-400 uppercase text-xs text-center">Scientist
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody id="feature-config-table">
+                            <tr class="border-b border-slate-50 hover:bg-slate-50">
+                                <td class="py-3 text-slate-700">Query Enhancement</td>
+                                <td class="py-3 text-center"><span class="text-red-500">❌</span></td>
+                                <td class="py-3 text-center"><span class="text-green-500">✅</span></td>
+                                <td class="py-3 text-center"><span class="text-green-500">✅</span></td>
+                            </tr>
+                            <tr class="border-b border-slate-50 hover:bg-slate-50">
+                                <td class="py-3 text-slate-700">Reranker</td>
+                                <td class="py-3 text-center"><span class="text-red-500">❌</span></td>
+                                <td class="py-3 text-center"><span class="text-green-500">✅</span></td>
+                                <td class="py-3 text-center"><span class="text-green-500">✅</span></td>
+                            </tr>
+                            <tr class="border-b border-slate-50 hover:bg-slate-50">
+                                <td class="py-3 text-slate-700">Self-Critique</td>
+                                <td class="py-3 text-center"><span class="text-red-500">❌</span></td>
+                                <td class="py-3 text-center"><span class="text-green-500">✅</span></td>
+                                <td class="py-3 text-center"><span class="text-red-500">❌</span></td>
+                            </tr>
+                            <tr class="border-b border-slate-50 hover:bg-slate-50">
+                                <td class="py-3 text-slate-700">Groundedness Check</td>
+                                <td class="py-3 text-center"><span class="text-red-500">❌</span></td>
+                                <td class="py-3 text-center"><span class="text-red-500">❌</span></td>
+                                <td class="py-3 text-center"><span class="text-green-500">✅</span></td>
+                            </tr>
+                            <tr class="border-b border-slate-50 hover:bg-slate-50">
+                                <td class="py-3 text-slate-700">Correction Loop</td>
+                                <td class="py-3 text-center"><span class="text-red-500">❌</span></td>
+                                <td class="py-3 text-center"><span class="text-red-500">❌</span></td>
+                                <td class="py-3 text-center"><span class="text-green-500">✅</span></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Recent Experimental Queries Table -->
+            <div class="bg-white border border-slate-100 rounded-xl p-6 shadow-sm mt-8">
+                <h3 class="text-sm font-condensed font-bold text-agilent-blue uppercase tracking-wide mb-4">
+                    <i class="ph ph-list-dashes mr-1"></i> Recent Experimental Queries
+                </h3>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-sm">
+                        <thead>
+                            <tr class="border-b border-slate-100 text-left">
+                                <th class="pb-3 font-condensed text-slate-400 uppercase text-xs">Time</th>
+                                <th class="pb-3 font-condensed text-slate-400 uppercase text-xs">Persona</th>
+                                <th class="pb-3 font-condensed text-slate-400 uppercase text-xs">Query</th>
+                                <th class="pb-3 font-condensed text-slate-400 uppercase text-xs">Latency</th>
+                                <th class="pb-3 font-condensed text-slate-400 uppercase text-xs">Tokens</th>
+                            </tr>
+                        </thead>
+                        <tbody id="experimental-queries-table">
+                            <!-- Will be populated via JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <footer class="text-center py-6 bg-white border-t border-slate-200 mt-auto">
+        <p class="text-slate-400 text-xs font-condensed uppercase tracking-wider">
+            © Agilent Technologies, Inc. 2025
+        </p>
+    </footer>
+
+    <script>
+        // ===== TAB SWITCHING =====
+        document.querySelectorAll('.tab-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const tab = btn.dataset.tab;
+                // Update button styles
+                document.querySelectorAll('.tab-btn').forEach(b => {
+                    b.classList.remove('border-agilent-blue', 'text-agilent-blue');
+                    b.classList.add('border-transparent', 'text-slate-500');
+                });
+                btn.classList.remove('border-transparent', 'text-slate-500');
+                btn.classList.add('border-agilent-blue', 'text-agilent-blue');
+                // Show/hide content
+                document.querySelectorAll('.tab-content').forEach(c => c.classList.add('hidden'));
+                document.getElementById(`tab-${tab}`).classList.remove('hidden');
+            });
+        });
+
+        // ===== CHART INSTANCES =====
+        let charts = {};
+
+        // ===== DATA LOADING =====
+        async function loadDashboardData() {
+            const range = document.getElementById('date-range').value;
+            try {
+                const res = await fetch(`/api/observability/summary?range=${range}`);
+                const data = await res.json();
+                updateKPIs(data);
+                updateCharts(data);
+                document.getElementById('last-updated').innerHTML =
+                    `<i class="ph ph-clock mr-1"></i> Updated: ${new Date().toLocaleTimeString()}`;
+            } catch (err) {
+                console.error('Failed to load dashboard data:', err);
+            }
+        }
+
+        function updateKPIs(data) {
+            document.getElementById('kpi-queries').textContent = formatNumber(data.total_queries || 0);
+            document.getElementById('kpi-latency').textContent = formatNumber(data.avg_latency_ms || 0);
+            document.getElementById('kpi-satisfaction').textContent = `${(data.satisfaction_rate || 0).toFixed(1)}%`;
+            document.getElementById('kpi-cost').textContent = `$${(data.total_cost || 0).toFixed(2)}`;
+            document.getElementById('kpi-tokens').textContent = formatNumber(data.total_tokens || 0);
+            document.getElementById('kpi-streaming').textContent = `${(data.streaming_rate || 0).toFixed(1)}%`;
+
+            // Costs tab
+            document.getElementById('cost-total').textContent = `$${(data.total_cost || 0).toFixed(2)}`;
+            document.getElementById('cost-prompt').textContent = `$${(data.prompt_cost || 0).toFixed(2)}`;
+            document.getElementById('cost-completion').textContent = `$${(data.completion_cost || 0).toFixed(2)}`;
+            const cpc = data.total_queries > 0 ? data.total_cost / data.total_queries : 0;
+            document.getElementById('cost-per-query').textContent = `$${cpc.toFixed(4)}`;
+
+            // Feedback tab
+            document.getElementById('fb-total').textContent = formatNumber(data.total_feedback || 0);
+            document.getElementById('fb-positive').textContent = formatNumber(data.positive_feedback || 0);
+            document.getElementById('fb-negative').textContent = formatNumber(data.negative_feedback || 0);
+
+            // Performance tab
+            if (data.latency_percentiles) {
+                document.getElementById('perf-p95').textContent = `${data.latency_percentiles.p95 || '--'} ms`;
+                document.getElementById('perf-p99').textContent = `${data.latency_percentiles.p99 || '--'} ms`;
+            }
+
+            // OpenAI Usage Logs
+            if (data.openai_usage_logs) {
+                const usageHtml = data.openai_usage_logs.map(log => `
+                     <tr class="border-b border-slate-50 hover:bg-slate-50 font-mono text-xs">
+                        <td class="py-2 text-slate-500 whitespace-nowrap">${formatDate(log.timestamp)}</td>
+                        <td class="py-2 text-slate-700 font-semibold">${escapeHtml(log.model || '-')}</td>
+                        <td class="py-2 text-slate-500">${escapeHtml(log.scenario || '-')}</td>
+                        <td class="py-2 text-slate-600 text-right">${formatNumber(log.prompt_tokens || 0)}</td>
+                        <td class="py-2 text-slate-600 text-right">${formatNumber(log.completion_tokens || 0)}</td>
+                         <td class="py-2 text-slate-800 font-bold text-right">${formatNumber(log.total_tokens || 0)}</td>
+                    </tr>
+                `).join('');
+                document.getElementById('openai-usage-table').innerHTML = usageHtml || '<tr><td colspan="6" class="py-4 text-center text-slate-400">No usage logs found</td></tr>';
+            }
+
+            // Quality tab
+            document.getElementById('qual-citation').textContent = `${(data.citation_rate || 0).toFixed(1)}%`;
+            document.getElementById('qual-avg-citations').textContent = (data.avg_citations || 0).toFixed(1);
+            document.getElementById('qual-error').textContent = `${(data.error_rate || 0).toFixed(1)}%`;
+            document.getElementById('qual-length').textContent = `${formatNumber(data.avg_response_length || 0)} chars`;
+
+            // Feedback tags
+            if (data.tag_distribution) {
+                const tagsHtml = Object.entries(data.tag_distribution)
+                    .sort((a, b) => b[1] - a[1])
+                    .slice(0, 5)
+                    .map(([tag, count]) => `
+                        <div class="flex items-center justify-between">
+                            <span class="text-sm text-slate-600 truncate">${tag}</span>
+                            <span class="text-sm font-bold text-slate-800">${count}</span>
+                        </div>
+                    `).join('');
+                document.getElementById('feedback-tags').innerHTML = tagsHtml || '<p class="text-slate-400 text-sm">No feedback tags yet</p>';
+            }
+
+            // Recent feedback table
+            if (data.recent_feedback) {
+                const rowsHtml = data.recent_feedback.map(fb => `
+                    <tr class="border-b border-slate-50 hover:bg-slate-50">
+                        <td class="py-3 text-slate-400">${formatDate(fb.timestamp)}</td>
+                        <td class="py-3 text-slate-700 max-w-xs truncate">${escapeHtml(fb.user_query || '').substring(0, 50)}...</td>
+                        <td class="py-3">
+                            ${(fb.feedback_tags || []).map(t => `<span class="inline-block bg-slate-100 text-slate-600 text-xs px-2 py-0.5 rounded mr-1">${escapeHtml(t)}</span>`).join('')}
+                        </td>
+                        <td class="py-3 text-slate-500 max-w-xs truncate">${escapeHtml(fb.comment || '-')}</td>
+                    </tr>
+                `).join('');
+                document.getElementById('feedback-table').innerHTML = rowsHtml || '<tr><td colspan="4" class="py-4 text-center text-slate-400">No feedback yet</td></tr>';
+            }
+        }
+
+        function updateCharts(data) {
+            // Query Volume Chart
+            if (data.query_trend) {
+                const ctx = document.getElementById('chart-queries').getContext('2d');
+                if (charts.queries) charts.queries.destroy();
+                charts.queries = new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: data.query_trend.labels || [],
+                        datasets: [{
+                            label: 'Queries',
+                            data: data.query_trend.values || [],
+                            borderColor: '#0085D5',
+                            backgroundColor: 'rgba(0, 133, 213, 0.1)',
+                            fill: true,
+                            tension: 0.4
+                        }]
+                    },
+                    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
+                });
+            }
+
+            // Latency Breakdown Chart
+            if (data.latency_breakdown) {
+                const ctx = document.getElementById('chart-latency').getContext('2d');
+                if (charts.latency) charts.latency.destroy();
+                charts.latency = new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: ['Avg Latency'],
+                        datasets: [
+                            { label: 'Search', data: [data.latency_breakdown.search || 0], backgroundColor: '#60A5FA' },
+                            { label: 'Rerank', data: [data.latency_breakdown.rerank || 0], backgroundColor: '#A78BFA' },
+                            { label: 'LLM', data: [data.latency_breakdown.llm || 0], backgroundColor: '#34D399' }
+                        ]
+                    },
+                    options: { responsive: true, maintainAspectRatio: false, scales: { x: { stacked: true }, y: { stacked: true } } }
+                });
+            }
+
+            // Model Usage Chart
+            if (data.model_distribution) {
+                const ctx = document.getElementById('chart-models').getContext('2d');
+                if (charts.models) charts.models.destroy();
+                charts.models = new Chart(ctx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: Object.keys(data.model_distribution),
+                        datasets: [{ data: Object.values(data.model_distribution), backgroundColor: ['#0085D5', '#60A5FA', '#34D399', '#FBBF24', '#F87171'] }]
+                    },
+                    options: { responsive: true, maintainAspectRatio: false }
+                });
+            }
+
+            // Token Distribution Chart
+            if (data.prompt_tokens !== undefined) {
+                const ctx = document.getElementById('chart-tokens').getContext('2d');
+                if (charts.tokens) charts.tokens.destroy();
+                charts.tokens = new Chart(ctx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: ['Prompt Tokens', 'Completion Tokens'],
+                        datasets: [{ data: [data.prompt_tokens || 0, data.completion_tokens || 0], backgroundColor: ['#0085D5', '#34D399'] }]
+                    },
+                    options: { responsive: true, maintainAspectRatio: false }
+                });
+            }
+
+            // Streaming vs Standard
+            if (data.streaming_count !== undefined) {
+                const ctx = document.getElementById('chart-streaming').getContext('2d');
+                if (charts.streaming) charts.streaming.destroy();
+                charts.streaming = new Chart(ctx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: ['Streaming', 'Standard'],
+                        datasets: [{ data: [data.streaming_count || 0, data.standard_count || 0], backgroundColor: ['#0085D5', '#CBD5E1'] }]
+                    },
+                    options: { responsive: true, maintainAspectRatio: false }
+                });
+            }
+        }
+
+        // ===== HELPERS =====
+        function formatNumber(n) {
+            if (n >= 1000000) return (n / 1000000).toFixed(1) + 'M';
+            if (n >= 1000) return (n / 1000).toFixed(1) + 'K';
+            return n.toLocaleString();
+        }
+
+        function formatDate(iso) {
+            if (!iso) return '--';
+            const d = new Date(iso);
+            return d.toLocaleDateString() + ' ' + d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        }
+
+        function escapeHtml(str) {
+            if (!str) return '';
+            return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+        }
+
+        // ===== INIT =====
+        document.getElementById('date-range').addEventListener('change', loadDashboardData);
+        document.getElementById('refresh-btn').addEventListener('click', loadDashboardData);
+        document.getElementById('date-range').addEventListener('change', loadExperimentalData);
+        document.getElementById('refresh-btn').addEventListener('click', loadExperimentalData);
+        loadDashboardData();
+        loadExperimentalData();
+
+        // ===== EXPERIMENTAL MODE DATA =====
+        async function loadExperimentalData() {
+            const range = document.getElementById('date-range').value;
+            try {
+                const res = await fetch(`/api/observability/experimental?range=${range}`);
+                const data = await res.json();
+                updateExperimentalKPIs(data);
+                updateExperimentalCharts(data);
+            } catch (err) {
+                console.error('Failed to load experimental mode data:', err);
+            }
+        }
+
+        function updateExperimentalKPIs(data) {
+            // Basic KPIs
+            document.getElementById('exp-queries').textContent = formatNumber(data.experimental_queries || 0);
+            document.getElementById('prod-queries').textContent = formatNumber(data.production_queries || 0);
+            document.getElementById('adoption-rate').textContent = `${data.adoption_rate || 0}%`;
+
+            // Model info
+            document.getElementById('exp-model').textContent = data.model || 'Unknown';
+            if (data.cost_rates) {
+                document.getElementById('exp-prompt-cost').textContent = `$${data.cost_rates.prompt_per_1m || 0}/1M`;
+                document.getElementById('exp-completion-cost').textContent = `$${data.cost_rates.completion_per_1m || 0}/1M`;
+            }
+
+            // Calculate total period cost
+            const stats = data.persona_stats || {};
+            let totalPeriodCost = 0;
+            for (const p in stats) {
+                totalPeriodCost += stats[p].total_cost || 0;
+            }
+            document.getElementById('exp-total-cost').textContent = `$${totalPeriodCost.toFixed(2)}`;
+
+            // Update persona stats table
+            const personas = ['explorer', 'intermediate', 'scientist'];
+            const personaColors = { explorer: 'text-blue-600', intermediate: 'text-purple-600', scientist: 'text-green-600' };
+
+            let tableHtml = '';
+            for (const p of personas) {
+                const s = stats[p] || { query_count: 0, avg_latency_ms: 0, avg_tokens: 0, cost_per_query: 0, total_cost: 0 };
+                tableHtml += `
+                    <tr class="border-b border-slate-50 hover:bg-slate-50">
+                        <td class="py-3 font-medium ${personaColors[p]} capitalize">${p}</td>
+                        <td class="py-3 text-slate-700">${formatNumber(s.query_count)}</td>
+                        <td class="py-3 text-slate-700">${formatNumber(s.avg_latency_ms)}</td>
+                        <td class="py-3 text-slate-700">${formatNumber(s.avg_tokens)}</td>
+                        <td class="py-3 text-slate-700">$${s.cost_per_query.toFixed(6)}</td>
+                    </tr>
+                `;
+            } document.getElementById('persona-stats-table').innerHTML = tableHtml || '<tr><td colspan="5" class="py-4 text-center text-slate-400">No data yet</td></tr>';
+
+            // Update Recent Experimental Queries Table
+            const recentQueries = data.recent_queries || [];
+            let queriesHtml = '';
+
+            if (recentQueries.length === 0) {
+                queriesHtml = '<tr><td colspan="5" class="py-4 text-center text-slate-400">No recent experimental queries found</td></tr>';
+            } else {
+                queriesHtml = recentQueries.map(q => `
+                    <tr class="border-b border-slate-50 hover:bg-slate-50">
+                        <td class="py-3 text-slate-400 whitespace-nowrap">${formatDate(q.timestamp)}</td>
+                        <td class="py-3 font-medium capitalize ${personaColors[q.persona] || 'text-slate-600'}">${q.persona || '-'}</td>
+                        <td class="py-3 text-slate-700 max-w-md truncate" title="${escapeHtml(q.user_query)}">${escapeHtml(q.user_query)}</td>
+                        <td class="py-3 text-slate-500">${q.total_latency_ms ? formatNumber(q.total_latency_ms) + ' ms' : '-'}</td>
+                        <td class="py-3 text-slate-500">${q.total_tokens ? formatNumber(q.total_tokens) : '-'}</td>
+                    </tr>
+                `).join('');
+            }
+            document.getElementById('experimental-queries-table').innerHTML = queriesHtml;
+        }
+
+        function updateExperimentalCharts(data) {
+            const personas = ['explorer', 'intermediate', 'scientist'];
+            const stats = data.persona_stats || {};
+            const personaColors = ['#3B82F6', '#8B5CF6', '#10B981']; // Blue, Purple, Green
+
+            // Persona Distribution Doughnut
+            const personaDist = data.persona_distribution || {};
+            const distCtx = document.getElementById('chart-persona-dist').getContext('2d');
+            if (charts.personaDist) charts.personaDist.destroy();
+            charts.personaDist = new Chart(distCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: Object.keys(personaDist).map(p => p.charAt(0).toUpperCase() + p.slice(1)),
+                    datasets: [{
+                        data: Object.values(personaDist),
+                        backgroundColor: personaColors
+                    }]
+                },
+                options: { responsive: true, maintainAspectRatio: false }
+            });
+
+            // Mode Trend Over Time
+            const trend = data.mode_trend || { labels: [], experimental: [], production: [] };
+            const trendCtx = document.getElementById('chart-mode-trend').getContext('2d');
+            if (charts.modeTrend) charts.modeTrend.destroy();
+            charts.modeTrend = new Chart(trendCtx, {
+                type: 'line',
+                data: {
+                    labels: trend.labels,
+                    datasets: [
+                        {
+                            label: 'Experimental',
+                            data: trend.experimental,
+                            borderColor: '#8B5CF6',
+                            backgroundColor: 'rgba(139, 92, 246, 0.1)',
+                            fill: true,
+                            tension: 0.4
+                        },
+                        {
+                            label: 'Production',
+                            data: trend.production,
+                            borderColor: '#64748B',
+                            backgroundColor: 'rgba(100, 116, 139, 0.1)',
+                            fill: true,
+                            tension: 0.4
+                        }
+                    ]
+                },
+                options: { responsive: true, maintainAspectRatio: false }
+            });
+
+            // Latency by Persona Bar Chart
+            const latencyData = personas.map(p => (stats[p] || {}).avg_latency_ms || 0);
+            const latencyCtx = document.getElementById('chart-latency-persona').getContext('2d');
+            if (charts.latencyPersona) charts.latencyPersona.destroy();
+            charts.latencyPersona = new Chart(latencyCtx, {
+                type: 'bar',
+                data: {
+                    labels: personas.map(p => p.charAt(0).toUpperCase() + p.slice(1)),
+                    datasets: [{
+                        label: 'Avg Latency (ms)',
+                        data: latencyData,
+                        backgroundColor: personaColors
+                    }]
+                },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
+            });
+
+            // Tokens by Persona Bar Chart
+            const tokensData = personas.map(p => (stats[p] || {}).avg_tokens || 0);
+            const tokensCtx = document.getElementById('chart-tokens-persona').getContext('2d');
+            if (charts.tokensPersona) charts.tokensPersona.destroy();
+            charts.tokensPersona = new Chart(tokensCtx, {
+                type: 'bar',
+                data: {
+                    labels: personas.map(p => p.charAt(0).toUpperCase() + p.slice(1)),
+                    datasets: [{
+                        label: 'Avg Tokens',
+                        data: tokensData,
+                        backgroundColor: personaColors
+                    }]
+                },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
+            });
+
+            // Cost/Query by Persona Bar Chart
+            const costData = personas.map(p => (stats[p] || {}).cost_per_query || 0);
+            const costCtx = document.getElementById('chart-cost-persona').getContext('2d');
+            if (charts.costPersona) charts.costPersona.destroy();
+            charts.costPersona = new Chart(costCtx, {
+                type: 'bar',
+                data: {
+                    labels: personas.map(p => p.charAt(0).toUpperCase() + p.slice(1)),
+                    datasets: [{
+                        label: 'Cost/Query ($)',
+                        data: costData,
+                        backgroundColor: personaColors
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        y: {
+                            ticks: {
+                                callback: function (value) {
+                                    return '$' + value.toFixed(4);
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+    </script>
+
+</body>
+
+</html>

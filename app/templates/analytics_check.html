@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html lang="en" class=""> <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SAGE - Feedback Dashboard</title>
+     <link rel="icon" type="image/png" href="/static/nav_3.png">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+    <style>
+        /* Simple transition for dark mode */
+        body, .bg-slate-50, .bg-slate-900, .bg-white, .bg-slate-800 {
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+        .metric-value {
+            transition: color 0.3s ease;
+        }
+
+        /* Prevent ApexCharts from overflowing their cards */
+        .apex-chart-card {
+            overflow: hidden;
+        }
+        .apex-chart-card .apexcharts-canvas,
+        .apex-chart-card .apexcharts-svg {
+            width: 100% !important;
+            max-width: 100% !important;
+        }
+
+        /* Ensure ApexCharts tooltips are readable in dark theme */
+        .apexcharts-tooltip.apexcharts-theme-dark {
+            background: rgba(17, 24, 39, 0.96) !important; /* slate-900 */
+            border-color: rgba(255, 255, 255, 0.15) !important;
+            color: #fff !important;
+        }
+        .apexcharts-tooltip.apexcharts-theme-dark .apexcharts-tooltip-title,
+        .apexcharts-tooltip.apexcharts-theme-dark .apexcharts-tooltip-text-y-label,
+        .apexcharts-tooltip.apexcharts-theme-dark .apexcharts-tooltip-text-y-value,
+        .apexcharts-tooltip.apexcharts-theme-dark .apexcharts-tooltip-marker {
+            color: #fff !important;
+        }
+    </style>
+</head>
+<body class="bg-slate-50 dark:bg-slate-900 font-sans antialiased">
+
+    <div id="loading-overlay" class="fixed inset-0 bg-slate-900/50 dark:bg-slate-900/80 backdrop-blur-sm flex items-center justify-center z-50 transition-opacity duration-300">
+        <div class="flex flex-col items-center">
+            <div class="w-12 h-12 border-4 border-slate-200 dark:border-slate-600 border-t-blue-500 rounded-full animate-spin"></div>
+            <p class="mt-4 text-white font-medium">Loading Dashboard Data...</p>
+        </div>
+    </div>
+
+    <div class="container mx-auto px-4 sm:px-6 lg:px-8 py-8" style="max-width: 90%;">
+
+        <header class="mb-8 p-6 bg-white dark:bg-slate-800 rounded-xl shadow-md border border-slate-200 dark:border-slate-700">
+            <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+                <div>
+                    <h1 class="text-3xl font-bold text-slate-900 dark:text-white">SAGE Dashboard</h1>
+                    <p class="text-md text-slate-500 dark:text-slate-400">Knowledge Navigator Feedback & Usage</p>
+                    <p id="date-range" class="mt-2 text-sm font-medium text-blue-600 dark:text-blue-400">All Time</p>
+                </div>
+
+                <div class="w-full md:w-auto flex flex-col sm:flex-row items-start sm:items-center gap-4">
+                    <div class="flex items-center gap-2">
+                        <input type="date" id="start-date" class="bg-slate-100 dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-md p-2 text-sm text-slate-900 dark:text-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <span class="text-slate-500">-</span>
+                        <input type="date" id="end-date" class="bg-slate-100 dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-md p-2 text-sm text-slate-900 dark:text-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <button onclick="applyDateFilter()" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-md transition-all duration-200 shadow-sm hover:shadow-md h-full">Apply</button>
+                    </div>
+
+                    <div class="flex items-center gap-2">
+                         <button onclick="downloadReport()" class="btn-download flex items-center gap-2 px-4 py-2 bg-green-600 hover:bg-green-700 text-white font-semibold rounded-md transition-all duration-200 shadow-sm hover:shadow-md">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+                            <span>Download Excel</span>
+                        </button>
+                        <button onclick="toggleDarkMode()" class="p-2 rounded-md bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-300 dark:hover:bg-slate-600 transition-colors">
+                            <svg id="dark-mode-icon" class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"></svg>
+                        </button>
+                    </div>
+                </div>
+            </div>
+             <div id="status-indicator" class="mt-4">
+                <div class="status-content inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-medium">
+                    <span class="status-icon w-4 h-4 text-center leading-4">⟳</span>
+                    <span class="status-text">Live</span>
+                </div>
+            </div>
+        </header>
+
+        <!-- GROUP 2: Four KPI cards in a single row -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+            <div class="bg-white dark:bg-slate-800 rounded-xl shadow-md p-6 border border-slate-200 dark:border-slate-700">
+                <div class="flex items-center">
+                    <div class="p-3 bg-blue-600 rounded-lg"><svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg></div>
+                    <div class="ml-4">
+                        <p class="text-sm font-medium text-slate-600 dark:text-slate-400">Total Queries</p>
+                        <p id="total-queries" class="text-2xl font-bold text-slate-900 dark:text-white metric-value">1292</p>
+                    </div>
+                </div>
+            </div>
+            <div class="bg-white dark:bg-slate-800 rounded-xl shadow-md p-6 border border-slate-200 dark:border-slate-700">
+                <div class="flex items-center">
+                    <div class="p-3 bg-cyan-600 rounded-lg"><svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z"></path></svg></div>
+                    <div class="ml-4">
+                        <p class="text-sm font-medium text-slate-600 dark:text-slate-400">Total Feedback</p>
+                        <p id="total-feedback" class="text-2xl font-bold text-slate-900 dark:text-white metric-value">1460</p>
+                    </div>
+                </div>
+            </div>
+            <div class="bg-white dark:bg-slate-800 rounded-xl shadow-md p-6 border border-slate-200 dark:border-slate-700">
+                <div class="flex items-center">
+                    <div class="p-3 bg-violet-600 rounded-lg"><svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 15l-2 5L9 9l11 4-5 2zm0 0l5 5M7.188 2.239l.777 2.897M5.136 7.965l-2.898-.777M13.95 4.05l-2.122 2.122m-5.657 5.656l-2.12 2.122"></path></svg></div>
+                    <div class="ml-4">
+                        <p class="text-sm font-medium text-slate-600 dark:text-slate-400">Feedback Rate</p>
+                        <p id="feedback-rate" class="text-2xl font-bold text-slate-900 dark:text-white metric-value">113.0%</p>
+                    </div>
+                </div>
+            </div>
+            <div class="bg-white dark:bg-slate-800 rounded-xl shadow-md p-6 border border-slate-200 dark:border-slate-700">
+                <div class="flex items-center">
+                    <div class="p-3 bg-emerald-600 rounded-lg"><svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 10h4.764a2 2 0 011.789 2.894l-3.5 7A2 2 0 0115.263 21h-4.017c-.163 0-.326-.02-.485-.06L7 20m7-10V5a2 2 0 00-2-2h-.085a2 2 0 00-1.736.93L5 10m7 0l-2.5 5M14 10l-2.5-5"></path></svg></div>
+                    <div class="ml-4">
+                        <p class="text-sm font-medium text-slate-600 dark:text-slate-400">Positive Feedback</p>
+                        <p id="positive-percentage" class="text-2xl font-bold text-slate-900 dark:text-white metric-value">0.0%</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Charts section: Tokens/Cost on top right, Tags below -->
+        <div class="grid grid-cols-1 lg:grid-cols-7 gap-6 mb-8">
+            <!-- Left: Feedback Breakdown -->
+            <div class="lg:col-span-2 bg-white dark:bg-slate-800 rounded-xl shadow-md p-6 border border-slate-200 dark:border-slate-700 overflow-hidden apex-chart-card">
+                <h2 class="text-lg font-bold text-slate-900 dark:text-white">Feedback Breakdown</h2>
+                <p class="text-xs text-slate-500 dark:text-slate-400 mb-4">Positive vs. Constructive Feedback Ratio</p>
+                <div id="feedbackBreakdownChart" class="w-full h-[280px]"></div>
+            </div>
+
+            <!-- Left-middle: Constructive with Comments -->
+            <div class="lg:col-span-2 bg-white dark:bg-slate-800 rounded-xl shadow-md p-6 border border-slate-200 dark:border-slate-700 overflow-hidden apex-chart-card">
+                <h2 class="text-lg font-bold text-slate-900 dark:text-white">Constructive with Comments</h2>
+                <p class="text-xs text-slate-500 dark:text-slate-400 mb-4">Share of constructive feedback that includes comments</p>
+                <div id="constructiveCommentsChart" class="w-full h-[280px]"></div>
+            </div>
+
+            <!-- Right: Nested layout (top sub-row: Tokens & Cost, bottom sub-row: Tags) -->
+            <div class="lg:col-span-3">
+                <!-- Top sub-row -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-6">
+                    <!-- Total Tokens -->
+                    <div class="bg-white dark:bg-slate-800 rounded-xl shadow-md p-6 border border-slate-200 dark:border-slate-700">
+                        <div class="flex items-center">
+                            <div class="p-3 bg-amber-600 rounded-lg">
+                                <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7h18M3 12h18M3 17h18"/>
+                                </svg>
+                            </div>
+                            <div class="ml-4">
+                                <p class="text-sm font-medium text-slate-600 dark:text-slate-400">Total Tokens</p>
+                                <p id="total-tokens" class="text-2xl font-bold text-slate-900 dark:text-white metric-value">166603275</p>
+                            </div>
+                        </div>
+                        <p class="mt-2 text-xs text-slate-500 dark:text-slate-400">
+                            <span id="token-breakdown">158860281 prompt • 7742994 output • 0 cached</span>
+                        </p>
+                    </div>
+
+                    <!-- Est. Cost (USD) -->
+                    <div class="bg-white dark:bg-slate-800 rounded-xl shadow-md p-6 border border-slate-200 dark:border-slate-700">
+                        <div class="flex items-center">
+                            <div class="p-3 bg-rose-600 rounded-lg">
+                                <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 1.12-3 2.5S10.343 13 12 13s3 1.12 3 2.5S13.657 18 12 18m0-10V6m0 12v-2"/>
+                                </svg>
+                            </div>
+                            <div class="ml-4">
+                                <p class="text-sm font-medium text-slate-600 dark:text-slate-400">Est. Cost (USD)</p>
+                                <p id="total-cost" class="text-2xl font-bold text-slate-900 dark:text-white metric-value">6980.214</p>
+                            </div>
+                        </div>
+                        <p class="mt-2 text-xs text-slate-500 dark:text-slate-400">
+                            <span id="cost-breakdown">prompt $1927.8343 • output $5052.3796 • cached $0</span>
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Bottom sub-row: Constructive Feedback Tags -->
+                <div class="bg-white dark:bg-slate-800 rounded-xl shadow-md p-6 border border-slate-200 dark:border-slate-700 overflow-hidden apex-chart-card">
+                    <h2 class="text-lg font-bold text-slate-900 dark:text-white">Constructive Feedback Tags</h2>
+                    <p class="text-xs text-slate-500 dark:text-slate-400 mb-4">Most common issues reported by users</p>
+                    <div id="feedbackTagsChart" class="w-full h-[280px]"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- AI-Powered Insights Cards -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+            <div class="bg-white dark:bg-slate-800 rounded-xl p-6 border border-slate-200 dark:border-slate-700">
+                <div class="flex items-center mb-3">
+                    <div class="p-2 bg-blue-100 dark:bg-blue-900/50 rounded-lg mr-3">
+                        <svg class="w-5 h-5 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+                        </svg>
+                    </div>
+                    <h3 class="text-md font-semibold text-slate-900 dark:text-white">Query-Feedback Correlation</h3>
+                </div>
+                <div id="card1-content" class="text-sm text-slate-700 dark:text-slate-300">
+                    
+                        <p class="text-slate-500 dark:text-slate-400">No correlation insights available</p>
+                    
+                </div>
+            </div>
+
+            <div class="bg-white dark:bg-slate-800 rounded-xl p-6 border border-slate-200 dark:border-slate-700">
+                <div class="flex items-center mb-3">
+                    <div class="p-2 bg-green-100 dark:bg-green-900/50 rounded-lg mr-3">
+                        <svg class="w-5 h-5 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                    </div>
+                    <h3 class="text-md font-semibold text-slate-900 dark:text-white">Aspect-Based Analysis</h3>
+                </div>
+                <div id="card2-content" class="text-sm text-slate-700 dark:text-slate-300">
+                    
+                        <p class="text-slate-500 dark:text-slate-400">No aspect analysis available</p>
+                    
+                </div>
+            </div>
+
+            <div class="bg-white dark:bg-slate-800 rounded-xl p-6 border border-slate-200 dark:border-slate-700">
+                <div class="flex items-center mb-3">
+                    <div class="p-2 bg-purple-100 dark:bg-purple-900/50 rounded-lg mr-3">
+                        <svg class="w-5 h-5 text-purple-600 dark:text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
+                        </svg>
+                    </div>
+                    <h3 class="text-md font-semibold text-slate-900 dark:text-white">Product Priorities</h3>
+                </div>
+                <div id="card3-content" class="text-sm text-slate-700 dark:text-slate-300">
+                    
+                        <p class="text-slate-500 dark:text-slate-400">No product insights available</p>
+                    
+                </div>
+            </div>
+        </div>
+
+        <!-- Legacy Summary Cards -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div class="bg-white dark:bg-slate-800 rounded-xl p-6 border border-slate-200 dark:border-slate-700">
+                <div class="flex items-center mb-3">
+                    <div class="p-2 bg-blue-100 dark:bg-blue-900/50 rounded-lg mr-3"><svg class="w-5 h-5 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path></svg></div>
+                    <h3 class="text-md font-semibold text-slate-900 dark:text-white">Feedback Summary</h3>
+                </div>
+                <p class="text-sm text-slate-700 dark:text-slate-300">Detailed metrics show <strong id="positive-feedback-count" class="font-bold text-emerald-600 dark:text-emerald-400">0</strong> positive and <strong id="constructive-feedback-count" class="font-bold text-blue-600 dark:text-blue-400">1460</strong> constructive feedback entries.</p>
+            </div>
+            <div class="bg-white dark:bg-slate-800 rounded-xl p-6 border border-slate-200 dark:border-slate-700">
+                 <div class="flex items-center mb-3">
+                    <div class="p-2 bg-slate-100 dark:bg-slate-700/50 rounded-lg mr-3"><svg class="w-5 h-5 text-slate-600 dark:text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path></svg></div>
+                    <h3 class="text-md font-semibold text-slate-900 dark:text-white">Comment Analysis</h3>
+                </div>
+                <p class="text-sm text-slate-700 dark:text-slate-300"><strong id="constructive-comment-percentage" class="font-bold text-slate-800 dark:text-slate-200">0%</strong> of constructive feedback includes detailed comments, providing actionable insights for improvement.</p>
+            </div>
+            <div class="bg-white dark:bg-slate-800 rounded-xl p-6 border border-slate-200 dark:border-slate-700">
+                 <div class="flex items-center mb-3">
+                    <div class="p-2 bg-slate-100 dark:bg-slate-700/50 rounded-lg mr-3"><svg class="w-5 h-5 text-slate-600 dark:text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z"></path></svg></div>
+                    <h3 class="text-md font-semibold text-slate-900 dark:text-white">Top Improvement Area</h3>
+                </div>
+                <p id="top-issue-text" class="text-sm text-slate-700 dark:text-slate-300"></p>
+            </div>
+        </div>
+
+        <!-- Recent Activity Tables (AJAX, respects page date range) -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-8">
+            <!-- Recent RAG Queries -->
+            <div class="bg-white dark:bg-slate-800 rounded-xl shadow-md p-6 border border-slate-200 dark:border-slate-700">
+                <div class="flex items-start justify-between mb-4">
+                    <div>
+                        <h2 class="text-lg font-bold text-slate-900 dark:text-white">Recent RAG Queries</h2>
+                        <p class="text-xs text-slate-500 dark:text-slate-400">Latest activity in the selected date range</p>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <span class="text-xs text-slate-500 dark:text-slate-400">Show</span>
+                        <select id="rag-limit-select" class="bg-slate-100 dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-md px-2 py-1 text-xs text-slate-900 dark:text-slate-300" onchange="setRagLimit(this.value)">
+                            <option>10</option>
+                            <option selected>25</option>
+                            <option>50</option>
+                            <option>100</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full">
+                        <thead class="bg-slate-50 dark:bg-slate-700">
+                            <tr>
+                                <th class="px-3 py-2 text-left text-xs font-medium uppercase tracking-wider text-slate-500 dark:text-slate-300">ID</th>
+                                <th class="px-3 py-2 text-left text-xs font-medium uppercase tracking-wider text-slate-500 dark:text-slate-300">Timestamp</th>
+                                <th class="px-3 py-2 text-left text-xs font-medium uppercase tracking-wider text-slate-500 dark:text-slate-300">User Query</th>
+                                <th class="px-3 py-2 text-left text-xs font-medium uppercase tracking-wider text-slate-500 dark:text-slate-300">Bot Response</th>
+                                <th class="px-3 py-2 text-left text-xs font-medium uppercase tracking-wider text-slate-500 dark:text-slate-300">Context</th>
+                                <th class="px-3 py-2 text-right text-xs font-medium uppercase tracking-wider text-slate-500 dark:text-slate-300">Tokens</th>
+                                <th class="px-3 py-2 text-right text-xs font-medium uppercase tracking-wider text-slate-500 dark:text-slate-300">Cost</th>
+                                <th class="px-3 py-2 text-right text-xs font-medium uppercase tracking-wider text-slate-500 dark:text-slate-300">LLM ms</th>
+                                <th class="px-3 py-2 text-right text-xs font-medium uppercase tracking-wider text-slate-500 dark:text-slate-300">Total ms</th>
+                                <th class="px-3 py-2 text-center text-xs font-medium uppercase tracking-wider text-slate-500 dark:text-slate-300">Cite</th>
+                                <th class="px-3 py-2 text-left text-xs font-medium uppercase tracking-wider text-slate-500 dark:text-slate-300">Model</th>
+                                <th class="px-3 py-2 text-center text-xs font-medium uppercase tracking-wider text-slate-500 dark:text-slate-300">SC</th>
+                                <th class="px-3 py-2 text-left text-xs font-medium uppercase tracking-wider text-slate-500 dark:text-slate-300">Sess</th>
+                            </tr>
+                        </thead>
+                        <tbody id="ragTableBody" class="divide-y divide-slate-200 dark:divide-slate-700 text-slate-700 dark:text-slate-300 text-sm"></tbody>
+                    </table>
+                    <div id="ragEmpty" class="hidden text-center text-slate-400 text-sm py-6">No records in range</div>
+                    <div id="ragLoading" class="hidden text-center text-slate-400 text-sm py-6">Loading…</div>
+                </div>
+                <div class="mt-3 text-right">
+                    <a href="/rag-queries" class="text-xs text-blue-600 dark:text-blue-400 hover:underline">Open full viewer →</a>
+                </div>
+            </div>
+
+            <!-- Recent Feedback -->
+            <div class="bg-white dark:bg-slate-800 rounded-xl shadow-md p-6 border border-slate-200 dark:border-slate-700">
+                <div class="flex items-start justify-between mb-4">
+                    <div>
+                        <h2 class="text-lg font-bold text-slate-900 dark:text-white">Recent Feedback</h2>
+                        <p class="text-xs text-slate-500 dark:text-slate-400">Votes within the selected date range</p>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <span class="text-xs text-slate-500 dark:text-slate-400">Show</span>
+                        <select id="votes-limit-select" class="bg-slate-100 dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-md px-2 py-1 text-xs text-slate-900 dark:text-slate-300" onchange="setVotesLimit(this.value)">
+                            <option>10</option>
+                            <option selected>25</option>
+                            <option>50</option>
+                            <option>100</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full">
+                        <thead class="bg-slate-50 dark:bg-slate-700">
+                            <tr>
+                                <th class="px-3 py-2 text-left text-xs font-medium uppercase tracking-wider text-slate-500 dark:text-slate-300">ID</th>
+                                <th class="px-3 py-2 text-left text-xs font-medium uppercase tracking-wider text-slate-500 dark:text-slate-300">Timestamp</th>
+                                <th class="px-3 py-2 text-left text-xs font-medium uppercase tracking-wider text-slate-500 dark:text-slate-300">User Query</th>
+                                <th class="px-3 py-2 text-left text-xs font-medium uppercase tracking-wider text-slate-500 dark:text-slate-300">Bot Response</th>
+                                <th class="px-3 py-2 text-left text-xs font-medium uppercase tracking-wider text-slate-500 dark:text-slate-300">Tags</th>
+                                <th class="px-3 py-2 text-left text-xs font-medium uppercase tracking-wider text-slate-500 dark:text-slate-300">Comment</th>
+                                <th class="px-3 py-2 text-left text-xs font-medium uppercase tracking-wider text-slate-500 dark:text-slate-300">Session</th>
+                            </tr>
+                        </thead>
+                        <tbody id="votesTableBody" class="divide-y divide-slate-200 dark:divide-slate-700 text-slate-700 dark:text-slate-300 text-sm"></tbody>
+                    </table>
+                    <div id="votesEmpty" class="hidden text-center text-slate-400 text-sm py-6">No records in range</div>
+                    <div id="votesLoading" class="hidden text-center text-slate-400 text-sm py-6">Loading…</div>
+                </div>
+                <div class="mt-3 text-right">
+                    <a href="/rag-queries" class="text-xs text-blue-600 dark:text-blue-400 hover:underline">Open full viewer →</a>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        // Template data for JavaScript - using JSON.parse for safety
+        try {
+            var tagCountsData = '{"1 to 15 mins": 88, "16 to 30 mins": 11, "31 to 60 mins": 4, "\u003e 60 mins": 11, "Data Source Quality": 117, "Hard to Understand": 12, "Helpful": 70, "Incomplete": 168, "Incorrect": 336, "Irrelevant": 108, "No time saving": 5, "Not specified": 9, "Other Issue": 66, "helpful": 691}';
+            window.dashboardData = {
+                totalQueries: parseInt("1292") || 0,
+                totalFeedback: parseInt("1460") || 0,
+                feedbackRate: parseFloat("113.0") || 0,
+                positivePercentage: parseFloat("0.0") || 0,
+                tagCounts: tagCountsData === "None" || tagCountsData === "{}" ? {} : JSON.parse(tagCountsData),
+                positiveFeedback: parseInt("0") || 0,
+                constructiveFeedback: parseInt("1460") || 0,
+                feedbackWithComments: parseInt("0") || 0,
+                constructiveCommentPercentage: parseFloat("0") || 0,
+                dateRange: "All Time",
+                status: "Live",
+                note: "",
+                lastUpdated: "2026-01-07 14:42:13"
+            };
+            console.log('Dashboard data loaded successfully:', window.dashboardData);
+        } catch (error) {
+            console.error('Error parsing dashboard data:', error);
+            window.dashboardData = {
+                totalQueries: 0,
+                totalFeedback: 0,
+                feedbackRate: 0,
+                positivePercentage: 0,
+                tagCounts: {},
+                positiveFeedback: 0,
+                constructiveFeedback: 0,
+                feedbackWithComments: 0,
+                constructiveCommentPercentage: 0,
+                dateRange: "Error loading data",
+                status: "Error",
+                note: "",
+                lastUpdated: "Unknown"
+            };
+        }
+    </script>
+    <script src="/static/js/dashboard_script.js"></script>
+</body>
+</html>

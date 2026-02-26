@@ -1,0 +1,943 @@
+{# jinja2 #}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RAG and Feedback Logs</title>
+     <link rel="icon" type="image/png" href="/static/nav_3.png">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .rotate-180 {
+            transform: rotate(180deg);
+        }
+
+        .clamp-3-lines {
+            display: -webkit-box;
+            -webkit-line-clamp: 3;
+            line-clamp: 3;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        .collapsible-preview {
+            font-size: 0.75rem;
+            color: #374151;
+            background-color: #F9FAFB;
+            border: 1px solid #E5E7EB;
+            border-radius: 0.375rem;
+            padding: 0.5rem;
+            margin-top: 0.25rem;
+        }
+
+        .search-highlight {
+            background-color: #fef08a;
+        }
+
+        .search-container {
+            position: relative;
+        }
+
+        .search-input {
+            transition: all 0.2s ease;
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.25);
+        }
+
+        .search-input.searching {
+            border-color: #10b981;
+            background-color: #ecfdf5;
+        }
+
+        .search-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.25rem;
+            background-color: #3b82f6;
+            color: white;
+            padding: 0.25rem 0.75rem;
+            border-radius: 0.375rem;
+            font-size: 0.875rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background-color 0.15s ease;
+            white-space: nowrap;
+        }
+
+        .search-btn:hover {
+            background-color: #2563eb;
+        }
+
+        .clear-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0.25rem 0.75rem;
+            border-radius: 0.375rem;
+            font-size: 0.875rem;
+            background-color: #e5e7eb;
+            color: #374151;
+            cursor: pointer;
+            transition: background-color 0.15s ease;
+        }
+
+        .clear-btn:hover {
+            background-color: #d1d5db;
+        }
+
+        .search-active-badge {
+            display: none;
+            align-items: center;
+            gap: 0.25rem;
+            padding: 0.125rem 0.5rem;
+            background-color: #10b981;
+            color: white;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            animation: pulse 2s infinite;
+        }
+
+        .search-active-badge.visible {
+            display: flex;
+        }
+
+        @keyframes pulse {
+
+            0%,
+            100% {
+                opacity: 1;
+            }
+
+            50% {
+                opacity: 0.7;
+            }
+        }
+
+        .search-hint {
+            font-size: 0.625rem;
+            color: #9ca3af;
+            margin-top: 0.25rem;
+        }
+    </style>
+</head>
+
+<body class="bg-gray-100 min-h-screen">
+    <div class="container mx-auto py-8 px-4">
+        <!-- Production RAG Section -->
+        <div class="bg-white rounded-lg shadow-lg mb-8">
+            <button id="rag-prod-header"
+                class="w-full bg-blue-600 text-white p-6 flex items-center justify-between rounded-t-lg"
+                onclick="toggleSection('ragProdCollapsed','rag-prod-header','rag-prod-chevron','rag-prod-section')">
+                <div>
+                    <h2 class="text-3xl font-bold text-left">Production RAG Logs</h2>
+                    <p class="text-blue-100 mt-2 text-left">Table: rag_queries • <span id="rag-prod-count">{{
+                            rag_prod_count }}</span> entries</p>
+                </div>
+                <svg id="rag-prod-chevron" xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 transition-transform"
+                    fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                </svg>
+            </button>
+            <div id="rag-prod-section"
+                class="overflow-x-auto bg-white dark:bg-neutral-700 h-[150px] overflow-y-scroll p-4">
+                <!-- Search input -->
+                <div class="relative m-[2px] mb-3 mr-5 float-left">
+                    <label for="search-rag-prod" class="sr-only">Search</label>
+                    <input id="search-rag-prod" type="text" placeholder="Search..."
+                        class="block w-64 rounded-lg border dark:border-none dark:bg-neutral-600 py-2 pl-10 pr-4 text-sm focus:border-blue-400 focus:outline-none focus:ring-1 focus:ring-blue-400 search-input"
+                        oninput="handleSearchInput('rag-prod')" onkeydown="handleSearchKeydown(event, 'rag-prod')" />
+                    <span class="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 transform">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+                            stroke="currentColor" class="h-4 w-4 text-neutral-500 dark:text-neutral-200">
+                            <path stroke-linecap="round" stroke-linejoin="round"
+                                d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
+                        </svg>
+                    </span>
+                </div>
+
+                <!-- Filter -->
+                <div class="relative m-[2px] mb-3 float-right hidden sm:block">
+                    <label for="limit-rag-prod" class="sr-only">Filter</label>
+                    <select id="limit-rag-prod"
+                        class="block w-40 rounded-lg border dark:border-none dark:bg-neutral-600 p-2 text-sm focus:border-blue-400 focus:outline-none focus:ring-1 focus:ring-blue-400"
+                        onchange="applyFilters('rag-prod')">
+                        <option value="50">50</option>
+                        <option value="100">100</option>
+                        <option value="500">500</option>
+                        <option value="1000">1000</option>
+                        <option value="all" selected>All</option>
+                    </select>
+                </div>
+
+                <!-- Table -->
+                <table class="min-w-full text-left text-xs whitespace-nowrap" id="table-rag-prod">
+                    <!-- Table head -->
+                    <thead
+                        class="uppercase tracking-wider sticky top-0 bg-white dark:bg-neutral-700 outline outline-2 outline-neutral-200 dark:outline-neutral-600">
+                        <tr>
+                            <th scope="col" class="px-6 py-3">ID</th>
+                            <th scope="col" class="px-6 py-3">Query ID</th>
+                            <th scope="col" class="px-6 py-3 text-center">Turn</th>
+                            <th scope="col" class="px-6 py-3">Timestamp</th>
+                            <th scope="col" class="px-6 py-3">User Query</th>
+                            <th scope="col" class="px-6 py-3">Response</th>
+                            <th scope="col" class="px-6 py-3 text-right">Resp Len</th>
+                            <th scope="col" class="px-6 py-3 text-right">Prompt</th>
+                            <th scope="col" class="px-6 py-3 text-right">Compl</th>
+                            <th scope="col" class="px-6 py-3 text-right">Total</th>
+                            <th scope="col" class="px-6 py-3 text-right">Cost</th>
+                            <th scope="col" class="px-6 py-3 text-right">LLM Lat</th>
+                            <th scope="col" class="px-6 py-3 text-right">Total Lat</th>
+                            <th scope="col" class="px-6 py-3 text-right">Cites</th>
+                            <th scope="col" class="px-6 py-3">Model</th>
+                            <th scope="col" class="px-6 py-3">Source URL</th>
+                            <th scope="col" class="px-6 py-3">Script</th>
+                            <th scope="col" class="px-6 py-3 text-center">Judge</th>
+                            <th scope="col" class="px-6 py-3">Session</th>
+                            <th scope="col" class="px-6 py-3">Actions</th>
+                        </tr>
+                    </thead>
+
+                    <!-- Table body -->
+                    <tbody class="bg-white dark:bg-neutral-800 divide-y dark:divide-neutral-700">
+                        {% for q in rag_prod_queries %}
+                        <tr class="border-b dark:border-neutral-600 hover:bg-neutral-100 dark:hover:bg-neutral-600 data-row"
+                            data-searchable="{{ q.user_query_full|lower }} {{ q.response_full|lower }} {{ q.session_id_full|lower }}">
+                            <td class="px-6 py-3 text-gray-900 dark:text-neutral-200">{{ q.id }}</td>
+                            <td class="px-6 py-3 text-gray-500 dark:text-neutral-400 font-mono text-xs"
+                                title="{{ q.query_id }}">{{
+                                q.query_id[:8] + '...' if q.query_id and q.query_id|length > 8 else (q.query_id or
+                                '-') }}</td>
+                            <td class="px-6 py-3 text-center text-gray-700 dark:text-neutral-300">{{ q.turn_index if
+                                q.turn_index is not
+                                none else '-' }}</td>
+                            <td class="px-6 py-3 text-gray-500 dark:text-neutral-400 font-mono whitespace-nowrap">{{
+                                q.timestamp.strftime('%Y-%m-%d %H:%M') if q.timestamp else '' }}</td>
+                            <td class="px-6 py-3 text-gray-900 dark:text-neutral-200 max-w-[150px] truncate"
+                                title="{{ q.user_query_full }}">{{ q.user_query }}</td>
+                            <td class="px-6 py-3 text-gray-900 dark:text-neutral-200 max-w-[200px] truncate"
+                                title="{{ q.response_full[:500] }}">{{ q.response }}</td>
+                            <td class="px-6 py-3 text-gray-900 dark:text-neutral-200 font-mono text-right">{{
+                                "{:,}".format(q.response_length) }}</td>
+                            <td class="px-6 py-3 text-gray-900 dark:text-neutral-200 font-mono text-right"
+                                title="{{ q.prompt_tokens.replace('|', '\n') if q.prompt_tokens else '' }}">
+                                {{ "{:,}".format(q.prompt_tokens_sum) }}</td>
+                            <td class="px-6 py-3 text-gray-900 dark:text-neutral-200 font-mono text-right"
+                                title="{{ q.completion_tokens.replace('|', '\n') if q.completion_tokens else '' }}">
+                                {{ "{:,}".format(q.completion_tokens_sum) }}</td>
+                            <td class="px-6 py-3 text-gray-900 dark:text-neutral-200 font-mono text-right"
+                                title="{{ q.total_tokens.replace('|', '\n') if q.total_tokens else '' }}">
+                                {{ "{:,}".format(q.total_tokens_sum) }}</td>
+                            <td class="px-6 py-3 text-green-600 dark:text-green-400 font-mono text-right">${{
+                                q.cost_total }}</td>
+                            <td class="px-6 py-3 text-blue-600 dark:text-blue-400 font-mono text-right">{{
+                                "{:,}".format(q.llm_latency_ms) }}</td>
+                            <td class="px-6 py-3 text-blue-600 dark:text-blue-400 font-mono text-right">{{
+                                "{:,}".format(q.total_latency_ms) }}</td>
+                            <td class="px-6 py-3 text-gray-900 dark:text-neutral-200 font-mono text-right">{{
+                                q.citation_count }}</td>
+                            <td class="px-6 py-3 text-gray-500 dark:text-neutral-400 font-mono" title="{{ q.model }}">
+                                {{ q.model[:12] if
+                                q.model else q.deployment_name[:10] }}</td>
+                            <td class="px-6 py-3 text-gray-500 dark:text-neutral-400 font-mono text-xs"
+                                title="{{ q.source_url }}">{{
+                                q.source_url[:20] + '...' if q.source_url|length > 20 else q.source_url }}</td>
+                            <td class="px-6 py-3 text-gray-500 dark:text-neutral-400 font-mono text-xs">{{
+                                q.source_script }}</td>
+                            <td class="px-6 py-3 text-center text-gray-900 dark:text-neutral-200">{{ q.self_judge }}
+                            </td>
+                            <td class="px-6 py-3 text-gray-500 dark:text-neutral-400 font-mono">{{ q.session_id }}</td>
+                            <td class="px-6 py-3">
+                                <button
+                                    class="js-view-rag bg-blue-500 hover:bg-blue-600 text-white px-2 py-1 rounded text-xs"
+                                    data-section="rag-prod" data-id="{{ q.id }}"
+                                    data-json='{{ q|tojson|e }}'>View</button>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+
+                <nav class="mt-5 flex items-center justify-between text-sm" aria-label="Page navigation example">
+                    <p id="rag-prod-status" class="text-neutral-600 dark:text-neutral-300">
+                        Showing <strong>50</strong> of <strong>{{ rag_prod_count }}</strong>
+                    </p>
+
+                    <ul class="list-style-none flex">
+                        <li>
+                            <button id="rag-prod-load-more" onclick="loadMore('rag-prod')"
+                                class="relative block rounded bg-transparent px-3 py-1.5 text-sm text-neutral-600 transition-all duration-300 hover:bg-neutral-100 dark:text-white dark:hover:bg-neutral-700 dark:hover:text-white"
+                                {% if rag_prod_count <=50 %}style="display:none" {% endif %}>
+                                Load More ({{ rag_prod_count - 50 }} remaining)
+                            </button>
+                        </li>
+                    </ul>
+                </nav>
+                {% if rag_prod_queries|length == 0 %}
+                <div class="p-8 text-center text-gray-500">No production RAG queries found.</div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Dev RAG Section -->
+        <div class="bg-white rounded-lg shadow-lg mb-8">
+            <button id="rag-dev-header"
+                class="w-full bg-amber-600 text-white p-6 flex items-center justify-between rounded-t-lg"
+                onclick="toggleSection('ragDevCollapsed','rag-dev-header','rag-dev-chevron','rag-dev-section')">
+                <div>
+                    <h2 class="text-3xl font-bold text-left">Development RAG Logs</h2>
+                    <p class="text-amber-100 mt-2 text-left">Table: rag_queries_dev • <span id="rag-dev-count">{{
+                            rag_dev_count }}</span> entries</p>
+                </div>
+                <svg id="rag-dev-chevron" xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 transition-transform"
+                    fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                </svg>
+            </button>
+            <div id="rag-dev-section"
+                class="overflow-x-auto bg-white dark:bg-neutral-700 h-[150px] overflow-y-scroll p-4">
+                <!-- Search input -->
+                <div class="relative m-[2px] mb-3 mr-5 float-left">
+                    <label for="search-rag-dev" class="sr-only">Search</label>
+                    <input id="search-rag-dev" type="text" placeholder="Search..."
+                        class="block w-64 rounded-lg border dark:border-none dark:bg-neutral-600 py-2 pl-10 pr-4 text-sm focus:border-blue-400 focus:outline-none focus:ring-1 focus:ring-blue-400 search-input"
+                        oninput="handleSearchInput('rag-dev')" onkeydown="handleSearchKeydown(event, 'rag-dev')" />
+                    <span class="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 transform">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+                            stroke="currentColor" class="h-4 w-4 text-neutral-500 dark:text-neutral-200">
+                            <path stroke-linecap="round" stroke-linejoin="round"
+                                d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
+                        </svg>
+                    </span>
+                </div>
+
+                <!-- Filter -->
+                <div class="relative m-[2px] mb-3 float-right hidden sm:block">
+                    <label for="limit-rag-dev" class="sr-only">Filter</label>
+                    <select id="limit-rag-dev"
+                        class="block w-40 rounded-lg border dark:border-none dark:bg-neutral-600 p-2 text-sm focus:border-blue-400 focus:outline-none focus:ring-1 focus:ring-blue-400"
+                        onchange="applyFilters('rag-dev')">
+                        <option value="50">50</option>
+                        <option value="100">100</option>
+                        <option value="500">500</option>
+                        <option value="1000">1000</option>
+                        <option value="all" selected>All</option>
+                    </select>
+                </div>
+
+                <!-- Table -->
+                <table class="min-w-full text-left text-xs whitespace-nowrap" id="table-rag-dev">
+                    <thead
+                        class="uppercase tracking-wider sticky top-0 bg-white dark:bg-neutral-700 outline outline-2 outline-neutral-200 dark:outline-neutral-600">
+                        <tr>
+                            <th scope="col" class="px-6 py-3">ID</th>
+                            <th scope="col" class="px-6 py-3">Query ID</th>
+                            <th scope="col" class="px-6 py-3 text-center">Turn</th>
+                            <th scope="col" class="px-6 py-3">Timestamp</th>
+                            <th scope="col" class="px-6 py-3">User Query</th>
+                            <th scope="col" class="px-6 py-3">Response</th>
+                            <th scope="col" class="px-6 py-3 text-right">Resp Len</th>
+                            <th scope="col" class="px-6 py-3 text-right">Prompt</th>
+                            <th scope="col" class="px-6 py-3 text-right">Compl</th>
+                            <th scope="col" class="px-6 py-3 text-right">Total</th>
+                            <th scope="col" class="px-6 py-3 text-right">Cost</th>
+                            <th scope="col" class="px-6 py-3 text-right">LLM Lat</th>
+                            <th scope="col" class="px-6 py-3 text-right">Total Lat</th>
+                            <th scope="col" class="px-6 py-3 text-right">Cites</th>
+                            <th scope="col" class="px-6 py-3">Model</th>
+                            <th scope="col" class="px-6 py-3">Source URL</th>
+                            <th scope="col" class="px-6 py-3">Script</th>
+                            <th scope="col" class="px-6 py-3 text-center">Judge</th>
+                            <th scope="col" class="px-6 py-3">Session</th>
+                            <th scope="col" class="px-6 py-3">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody class="bg-white dark:bg-neutral-800 divide-y dark:divide-neutral-700">
+                        {% for q in rag_dev_queries %}
+                        <tr class="border-b dark:border-neutral-600 hover:bg-neutral-100 dark:hover:bg-neutral-600 data-row"
+                            data-searchable="{{ q.user_query_full|lower }} {{ q.response_full|lower }} {{ q.session_id_full|lower }}">
+                            <td class="px-6 py-3 text-gray-900 dark:text-neutral-200">{{ q.id }}</td>
+                            <td class="px-6 py-3 text-gray-500 dark:text-neutral-400 font-mono text-xs"
+                                title="{{ q.query_id }}">{{
+                                q.query_id[:8] + '...' if q.query_id and q.query_id|length > 8 else (q.query_id or
+                                '-') }}</td>
+                            <td class="px-6 py-3 text-center text-gray-700 dark:text-neutral-300">{{ q.turn_index if
+                                q.turn_index is not
+                                none else '-' }}</td>
+                            <td class="px-6 py-3 text-gray-500 dark:text-neutral-400 font-mono whitespace-nowrap">{{
+                                q.timestamp.strftime('%Y-%m-%d %H:%M') if q.timestamp else '' }}</td>
+                            <td class="px-6 py-3 text-gray-900 dark:text-neutral-200 max-w-[150px] truncate"
+                                title="{{ q.user_query_full }}">{{ q.user_query }}</td>
+                            <td class="px-6 py-3 text-gray-900 dark:text-neutral-200 max-w-[200px] truncate"
+                                title="{{ q.response_full[:500] }}">{{ q.response }}</td>
+                            <td class="px-6 py-3 text-gray-900 dark:text-neutral-200 font-mono text-right">{{
+                                "{:,}".format(q.response_length) }}</td>
+                            <td class="px-6 py-3 text-gray-900 dark:text-neutral-200 font-mono text-right"
+                                title="{{ q.prompt_tokens.replace('|', '\n') }}">
+                                {{ "{:,}".format(q.prompt_tokens_sum) }}
+                            </td>
+                            <td class="px-6 py-3 text-gray-900 dark:text-neutral-200 font-mono text-right"
+                                title="{{ q.completion_tokens.replace('|', '\n') }}">
+                                {{ "{:,}".format(q.completion_tokens_sum) }}
+                            </td>
+                            <td class="px-6 py-3 text-gray-900 dark:text-neutral-200 font-mono text-right"
+                                title="{{ q.total_tokens.replace('|', '\n') }}">
+                                {{ "{:,}".format(q.total_tokens_sum) }}
+                            </td>
+                            <td class="px-6 py-3 text-green-600 dark:text-green-400 font-mono text-right">${{
+                                q.cost_total }}</td>
+                            <td class="px-6 py-3 text-blue-600 dark:text-blue-400 font-mono text-right">{{
+                                "{:,}".format(q.llm_latency_ms) }}</td>
+                            <td class="px-6 py-3 text-blue-600 dark:text-blue-400 font-mono text-right">{{
+                                "{:,}".format(q.total_latency_ms) }}</td>
+                            <td class="px-6 py-3 text-gray-900 dark:text-neutral-200 font-mono text-right">{{
+                                q.citation_count }}</td>
+                            <td class="px-6 py-3 text-gray-500 dark:text-neutral-400 font-mono" title="{{ q.model }}">
+                                {{ q.model[:12] if
+                                q.model else q.deployment_name[:10] }}</td>
+                            <td class="px-6 py-3 text-gray-500 dark:text-neutral-400 font-mono text-xs"
+                                title="{{ q.source_url }}">{{
+                                q.source_url[:20] + '...' if q.source_url|length > 20 else q.source_url }}</td>
+                            <td class="px-6 py-3 text-gray-500 dark:text-neutral-400 font-mono text-xs">{{
+                                q.source_script }}</td>
+                            <td class="px-6 py-3 text-center text-gray-900 dark:text-neutral-200">{{ q.self_judge }}
+                            </td>
+                            <td class="px-6 py-3 text-gray-500 dark:text-neutral-400 font-mono">{{ q.session_id }}</td>
+                            <td class="px-6 py-3">
+                                <button
+                                    class="js-view-rag bg-amber-500 hover:bg-amber-600 text-white px-2 py-1 rounded text-xs"
+                                    data-section="rag-dev" data-id="{{ q.id }}"
+                                    data-json='{{ q|tojson|e }}'>View</button>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                <!-- Pagination controls -->
+                <nav class="mt-5 flex items-center justify-between text-sm" aria-label="Page navigation example">
+                    <p id="rag-dev-status" class="text-neutral-600 dark:text-neutral-300">
+                        Showing <strong>50</strong> of <strong>{{ rag_dev_count }}</strong>
+                    </p>
+                    <ul class="list-style-none flex">
+                        <li>
+                            <button id="rag-dev-load-more" onclick="loadMore('rag-dev')"
+                                class="relative block rounded bg-transparent px-3 py-1.5 text-sm text-neutral-600 transition-all duration-300 hover:bg-neutral-100 dark:text-white dark:hover:bg-neutral-700 dark:hover:text-white"
+                                {% if rag_dev_count <=50 %}style="display:none" {% endif %}>
+                                Load More ({{ rag_dev_count - 50 }} remaining)
+                            </button>
+                        </li>
+                    </ul>
+                </nav>
+                {% if rag_dev_queries|length == 0 %}
+                <div class="p-8 text-center text-gray-500">No development RAG queries found.</div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Votes/Feedback Section -->
+        <div class="bg-white rounded-lg shadow-lg mb-8">
+            <button id="votes-header"
+                class="w-full bg-indigo-600 text-white p-6 flex items-center justify-between rounded-t-lg"
+                onclick="toggleSection('votesCollapsed','votes-header','votes-chevron','votes-section')">
+                <div>
+                    <h2 class="text-3xl font-bold text-left">Feedback Logs</h2>
+                    <p class="text-indigo-100 mt-2 text-left">Table: votes • <span id="votes-count">{{ votes_count
+                            }}</span> entries</p>
+                </div>
+                <svg id="votes-chevron" xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 transition-transform"
+                    fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                </svg>
+            </button>
+            <div id="votes-section"
+                class="overflow-x-auto bg-white dark:bg-neutral-700 h-[150px] overflow-y-scroll p-4">
+                <!-- Search input -->
+                <div class="relative m-[2px] mb-3 mr-5 float-left">
+                    <label for="search-votes" class="sr-only">Search</label>
+                    <input id="search-votes" type="text" placeholder="Search..."
+                        class="block w-64 rounded-lg border dark:border-none dark:bg-neutral-600 py-2 pl-10 pr-4 text-sm focus:border-blue-400 focus:outline-none focus:ring-1 focus:ring-blue-400 search-input"
+                        oninput="handleSearchInput('votes')" onkeydown="handleSearchKeydown(event, 'votes')" />
+                    <span class="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 transform">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+                            stroke="currentColor" class="h-4 w-4 text-neutral-500 dark:text-neutral-200">
+                            <path stroke-linecap="round" stroke-linejoin="round"
+                                d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
+                        </svg>
+                    </span>
+                </div>
+
+                <!-- Filter -->
+                <div class="relative m-[2px] mb-3 float-right hidden sm:block">
+                    <label for="limit-votes" class="sr-only">Filter</label>
+                    <select id="limit-votes"
+                        class="block w-40 rounded-lg border dark:border-none dark:bg-neutral-600 p-2 text-sm focus:border-blue-400 focus:outline-none focus:ring-1 focus:ring-blue-400"
+                        onchange="applyFilters('votes')">
+                        <option value="50">50</option>
+                        <option value="100">100</option>
+                        <option value="500">500</option>
+                        <option value="1000">1000</option>
+                        <option value="all" selected>All</option>
+                    </select>
+                </div>
+
+                <!-- Table -->
+                <table class="min-w-full text-left text-xs whitespace-nowrap" id="table-votes">
+                    <thead
+                        class="uppercase tracking-wider sticky top-0 bg-white dark:bg-neutral-700 outline outline-2 outline-neutral-200 dark:outline-neutral-600">
+                        <tr>
+                            <th scope="col" class="px-6 py-3">ID</th>
+                            <th scope="col" class="px-6 py-3">Timestamp</th>
+                            <th scope="col" class="px-6 py-3">User Query</th>
+                            <th scope="col" class="px-6 py-3">Bot Response</th>
+                            <th scope="col" class="px-6 py-3">Tags</th>
+                            <th scope="col" class="px-6 py-3">Comment</th>
+                            <th scope="col" class="px-6 py-3">Session</th>
+                            <th scope="col" class="px-6 py-3">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody class="bg-white dark:bg-neutral-800 divide-y dark:divide-neutral-700">
+                        {% for v in votes_data %}
+                        <tr class="border-b dark:border-neutral-600 hover:bg-neutral-100 dark:hover:bg-neutral-600 data-row"
+                            data-searchable="{{ v.user_query_full|lower }} {{ v.bot_response_full|lower }} {{ v.comment_full|lower }}">
+                            <td class="px-6 py-3 text-gray-900 dark:text-neutral-200">{{ v.id }}</td>
+                            <td class="px-6 py-3 text-gray-500 dark:text-neutral-400 font-mono text-xs">{{
+                                v.timestamp.strftime('%Y-%m-%d %H:%M') if v.timestamp else '' }}</td>
+                            <td class="px-6 py-3 text-gray-900 dark:text-neutral-200 max-w-xs truncate"
+                                title="{{ v.user_query_full }}">{{ v.user_query }}</td>
+                            <td class="px-6 py-3 text-gray-900 dark:text-neutral-200 max-w-sm truncate"
+                                title="{{ v.bot_response_full[:500] }}">{{ v.bot_response }}</td>
+                            <td class="px-6 py-3 text-sm">
+                                {% for tag in v.tags %}
+                                <span class="px-1 py-0.5 rounded text-xs bg-blue-100 text-blue-800">{{ tag }}</span>
+                                {% endfor %}
+                            </td>
+                            <td class="px-6 py-3 text-gray-900 dark:text-neutral-200 max-w-xs truncate">{{ v.comment }}
+                            </td>
+                            <td class="px-6 py-3 text-gray-500 dark:text-neutral-400 font-mono text-xs">{{ v.session_id
+                                }}</td>
+                            <td class="px-6 py-3">
+                                <button
+                                    class="js-view-vote bg-indigo-500 hover:bg-indigo-600 text-white px-2 py-1 rounded text-xs"
+                                    data-json='{{ v|tojson|e }}'>View</button>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                <!-- Pagination controls -->
+                <nav class="mt-5 flex items-center justify-between text-sm" aria-label="Page navigation example">
+                    <p id="votes-status" class="text-neutral-600 dark:text-neutral-300">
+                        Showing <strong>50</strong> of <strong>{{ votes_count }}</strong>
+                    </p>
+                    <ul class="list-style-none flex">
+                        <li>
+                            <button id="votes-load-more" onclick="loadMore('votes')"
+                                class="relative block rounded bg-transparent px-3 py-1.5 text-sm text-neutral-600 transition-all duration-300 hover:bg-neutral-100 dark:text-white dark:hover:bg-neutral-700 dark:hover:text-white"
+                                {% if votes_count <=50 %}style="display:none" {% endif %}>
+                                Load More ({{ votes_count - 50 }} remaining)
+                            </button>
+                        </li>
+                    </ul>
+                </nav>
+                {% if votes_data|length == 0 %}
+                <div class="p-8 text-center text-gray-500">No feedback found.</div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    </div>
+
+    <!-- Footer -->
+    <div class="text-center text-sm text-gray-500">
+        <p>Production: {{ rag_prod_count }} • Dev: {{ rag_dev_count }} • Feedback: {{ votes_count }}</p>
+    </div>
+    </div>
+
+    <!-- Detail Modal -->
+    <div id="detail-modal" class="hidden fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-lg shadow-xl w-full max-w-4xl max-h-[90vh] overflow-y-auto">
+            <div class="p-6" id="modal-content"></div>
+        </div>
+    </div>
+
+    <script>
+        // Pagination state
+        const PAGE_SIZE = 50;
+        const paginationState = {
+            'rag-prod': { shown: PAGE_SIZE, total: {{ rag_prod_count }} },
+        'rag-dev': { shown: PAGE_SIZE, total: { { rag_dev_count } } },
+        'votes': { shown: PAGE_SIZE, total: { { votes_count } } }
+        };
+
+        // Initialize: hide rows beyond PAGE_SIZE
+        document.addEventListener('DOMContentLoaded', function () {
+            ['rag-prod', 'rag-dev', 'votes'].forEach(section => {
+                applyPagination(section);
+            });
+        });
+
+        function applyPagination(section) {
+            const table = document.getElementById('table-' + section);
+            if (!table) return;
+            const rows = table.querySelectorAll('tbody tr.data-row');
+            const state = paginationState[section];
+            let visibleCount = 0;
+
+            rows.forEach((row, idx) => {
+                // Only show rows up to state.shown that match search
+                if (idx < state.shown && row.style.display !== 'none-search') {
+                    row.style.display = '';
+                    visibleCount++;
+                } else if (idx >= state.shown) {
+                    row.style.display = 'none';
+                }
+            });
+
+            updatePaginationUI(section);
+        }
+
+        function updatePaginationUI(section) {
+            const state = paginationState[section];
+            const countEl = document.getElementById(section + '-count');
+            const statusEl = document.getElementById(section + '-status');
+            const btnEl = document.getElementById(section + '-load-more');
+
+            if (countEl) countEl.textContent = state.total;
+            if (statusEl) statusEl.textContent = `Showing ${Math.min(state.shown, state.total)} of ${state.total}`;
+            if (btnEl) {
+                if (state.shown >= state.total) {
+                    btnEl.style.display = 'none';
+                } else {
+                    btnEl.style.display = '';
+                    btnEl.textContent = `Load More (${state.total - state.shown} remaining)`;
+                }
+            }
+        }
+
+        function loadMore(section) {
+            const state = paginationState[section];
+            state.shown += PAGE_SIZE;
+            applyPagination(section);
+        }
+
+        function toggleSection(key, headerId, chevronId, bodyId) {
+            const body = document.getElementById(bodyId);
+            const chev = document.getElementById(chevronId);
+            const collapsed = body.classList.toggle('hidden');
+            if (chev) chev.classList.toggle('rotate-180', collapsed);
+            localStorage.setItem(key, collapsed ? '1' : '0');
+        }
+
+        function filterTable(section) {
+            const search = document.getElementById('search-' + section).value.toLowerCase();
+            const table = document.getElementById('table-' + section);
+            const rows = table.querySelectorAll('tbody tr.data-row');
+            let matchCount = 0;
+
+            rows.forEach((row, idx) => {
+                const text = row.getAttribute('data-searchable') || '';
+                const matches = search === '' || text.includes(search);
+
+                if (matches) {
+                    // Mark as matching, but still respect pagination
+                    row.removeAttribute('data-hidden-search');
+                    if (idx < paginationState[section].shown) {
+                        row.style.display = '';
+                    }
+                    matchCount++;
+                } else {
+                    row.setAttribute('data-hidden-search', 'true');
+                    row.style.display = 'none';
+                }
+            });
+
+            // Update status and visual indicators
+            const statusEl = document.getElementById(section + '-status');
+            const searchInput = document.getElementById('search-' + section);
+            const badge = document.getElementById('search-badge-' + section);
+
+            if (statusEl) {
+                if (search) {
+                    statusEl.textContent = `${matchCount} matches found`;
+                    if (searchInput) searchInput.classList.add('searching');
+                    if (badge) badge.classList.add('visible');
+                } else {
+                    if (searchInput) searchInput.classList.remove('searching');
+                    if (badge) badge.classList.remove('visible');
+                    updatePaginationUI(section);
+                }
+            }
+        }
+
+        function handleSearchInput(section) {
+            // Debounced live search as user types
+            clearTimeout(window['searchTimeout_' + section]);
+            window['searchTimeout_' + section] = setTimeout(() => {
+                filterTable(section);
+            }, 300);
+        }
+
+        function handleSearchKeydown(event, section) {
+            // Trigger search immediately on Enter key
+            if (event.key === 'Enter') {
+                event.preventDefault();
+                clearTimeout(window['searchTimeout_' + section]);
+                filterTable(section);
+            }
+        }
+
+        function triggerSearch(section) {
+            // Explicit search button click
+            clearTimeout(window['searchTimeout_' + section]);
+            filterTable(section);
+        }
+
+        function clearSearch(section) {
+            const searchInput = document.getElementById('search-' + section);
+            const badge = document.getElementById('search-badge-' + section);
+
+            searchInput.value = '';
+            searchInput.classList.remove('searching');
+            if (badge) badge.classList.remove('visible');
+
+            const table = document.getElementById('table-' + section);
+            const rows = table.querySelectorAll('tbody tr.data-row');
+            rows.forEach(row => row.removeAttribute('data-hidden-search'));
+            applyPagination(section);
+        }
+
+        function applyFilters(section) {
+            filterTable(section);
+        }
+
+        function showDetail(section, id, data) {
+            const modal = document.getElementById('detail-modal');
+            const content = document.getElementById('modal-content');
+
+            content.innerHTML = `
+            <div class="relative">
+                <div class="absolute top-0 right-0 flex gap-2">
+                    <button onclick="expandAllSections()" class="bg-gray-200 hover:bg-gray-300 text-gray-800 text-xs px-2 py-1 rounded">Expand all</button>
+                    <button onclick="collapseAllSections()" class="bg-gray-200 hover:bg-gray-300 text-gray-800 text-xs px-2 py-1 rounded">Collapse all</button>
+                    <button onclick="closeModal()" class="text-gray-500 hover:text-gray-800 text-2xl ml-2">&times;</button>
+                </div>
+
+                <div class="pt-10 grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="collapsible-section">
+                        <h4 class="collapsible-header font-semibold text-gray-700 cursor-pointer flex items-center justify-between bg-gray-100 px-2 py-1 rounded" onclick="toggleCollapsible(this)">
+                            User Query <span class="chevron text-gray-500">▾</span>
+                        </h4>
+                        <div class="collapsible-preview clamp-3-lines text-xs text-gray-600 bg-gray-50 p-2 mt-1 rounded">${escapeHtml((data.user_query_full || '').substring(0, 200))}</div>
+                        <div class="collapsible-content hidden mt-1">
+                            <div class="whitespace-pre-wrap text-sm text-gray-900 border rounded p-2 bg-gray-50 max-h-64 overflow-auto">${escapeHtml(data.user_query_full || '')}</div>
+                            <button onclick="copyText(this)" data-text="${escapeHtml(data.user_query_full || '')}" class="mt-2 text-xs px-2 py-1 rounded bg-gray-200 hover:bg-gray-300">Copy</button>
+                        </div>
+                    </div>
+
+                    <div class="collapsible-section">
+                        <h4 class="collapsible-header font-semibold text-gray-700 cursor-pointer flex items-center justify-between bg-gray-100 px-2 py-1 rounded" onclick="toggleCollapsible(this)">
+                            Context <span class="chevron text-gray-500">▾</span>
+                        </h4>
+                        <div class="collapsible-preview clamp-3-lines text-xs text-gray-600 bg-gray-50 p-2 mt-1 rounded">${escapeHtml((data.context_full || 'No context available').substring(0, 200))}</div>
+                        <div class="collapsible-content hidden mt-1">
+                            <div class="whitespace-pre-wrap text-sm text-gray-900 border rounded p-2 bg-gray-50 max-h-64 overflow-auto">${escapeHtml(data.context_full || 'No context available')}</div>
+                            <button onclick="copyText(this)" data-text="${escapeHtml(data.context_full || '')}" class="mt-2 text-xs px-2 py-1 rounded bg-gray-200 hover:bg-gray-300">Copy</button>
+                        </div>
+                    </div>
+
+                    <div class="md:col-span-2 collapsible-section">
+                        <h4 class="collapsible-header font-semibold text-gray-700 cursor-pointer flex items-center justify-between bg-gray-100 px-2 py-1 rounded" onclick="toggleCollapsible(this)">
+                            Bot Response <span class="chevron text-gray-500">▾</span>
+                        </h4>
+                        <div class="collapsible-preview clamp-3-lines text-xs text-gray-600 bg-gray-50 p-2 mt-1 rounded">${escapeHtml((data.response_full || '').substring(0, 300))}</div>
+                        <div class="collapsible-content hidden mt-1">
+                            <div class="whitespace-pre-wrap text-sm text-gray-900 border rounded p-2 bg-gray-50 max-h-96 overflow-auto">${escapeHtml(data.response_full || '')}</div>
+                            <button onclick="copyText(this)" data-text="${escapeHtml(data.response_full || '')}" class="mt-2 text-xs px-2 py-1 rounded bg-gray-200 hover:bg-gray-300">Copy</button>
+                        </div>
+                    </div>
+
+                    <div class="md:col-span-2 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-2 text-xs text-gray-600 border-t pt-3 mt-2">
+                        <div>Request: <span class="font-mono">${data.request_id_full || '-'}</span></div>
+                        <div>Session: <span class="font-mono">${data.session_id_full || '-'}</span></div>
+                        <div>Tokens: <span class="font-mono">${formatNumber(data.total_tokens || 0)}</span></div>
+                        <div>LLM Latency: <span class="font-mono">${formatNumber(data.llm_latency_ms || 0)}ms</span></div>
+                        <div>Total Latency: <span class="font-mono">${formatNumber(data.total_latency_ms || 0)}ms</span></div>
+                        <div>Citations: <span class="font-mono">${data.citation_count || 0}</span></div>
+                    </div>
+                </div>
+            </div>
+            `;
+            modal.classList.remove('hidden');
+            document.body.classList.add('overflow-hidden');
+        }
+
+        function showVoteDetail(data) {
+            const modal = document.getElementById('detail-modal');
+            const content = document.getElementById('modal-content');
+            const tags = (data.tags || []).map(t => `<span class="px-2 py-1 rounded text-xs bg-blue-100 text-blue-800">${escapeHtml(t)}</span>`).join(' ');
+
+            content.innerHTML = `
+            <div class="relative">
+                <div class="absolute top-0 right-0 flex gap-2">
+                    <button onclick="expandAllSections()" class="bg-gray-200 hover:bg-gray-300 text-gray-800 text-xs px-2 py-1 rounded">Expand all</button>
+                    <button onclick="collapseAllSections()" class="bg-gray-200 hover:bg-gray-300 text-gray-800 text-xs px-2 py-1 rounded">Collapse all</button>
+                    <button onclick="closeModal()" class="text-gray-500 hover:text-gray-800 text-2xl ml-2">&times;</button>
+                </div>
+
+                <div class="pt-10 space-y-4">
+                    <div class="collapsible-section">
+                        <h4 class="collapsible-header font-semibold text-gray-700 cursor-pointer flex items-center justify-between bg-gray-100 px-2 py-1 rounded" onclick="toggleCollapsible(this)">
+                            User Query <span class="chevron text-gray-500">▾</span>
+                        </h4>
+                        <div class="collapsible-preview clamp-3-lines text-xs text-gray-600 bg-gray-50 p-2 mt-1 rounded">${escapeHtml((data.user_query_full || '').substring(0, 200))}</div>
+                        <div class="collapsible-content hidden mt-1">
+                            <div class="whitespace-pre-wrap text-sm text-gray-900 border rounded p-2 bg-gray-50">${escapeHtml(data.user_query_full || '')}</div>
+                            <button onclick="copyText(this)" data-text="${escapeHtml(data.user_query_full || '')}" class="mt-2 text-xs px-2 py-1 rounded bg-gray-200 hover:bg-gray-300">Copy</button>
+                        </div>
+                    </div>
+
+                    <div class="collapsible-section">
+                        <h4 class="collapsible-header font-semibold text-gray-700 cursor-pointer flex items-center justify-between bg-gray-100 px-2 py-1 rounded" onclick="toggleCollapsible(this)">
+                            Bot Response <span class="chevron text-gray-500">▾</span>
+                        </h4>
+                        <div class="collapsible-preview clamp-3-lines text-xs text-gray-600 bg-gray-50 p-2 mt-1 rounded">${escapeHtml((data.bot_response_full || '').substring(0, 300))}</div>
+                        <div class="collapsible-content hidden mt-1">
+                            <div class="whitespace-pre-wrap text-sm text-gray-900 border rounded p-2 bg-gray-50 max-h-64 overflow-auto">${escapeHtml(data.bot_response_full || '')}</div>
+                            <button onclick="copyText(this)" data-text="${escapeHtml(data.bot_response_full || '')}" class="mt-2 text-xs px-2 py-1 rounded bg-gray-200 hover:bg-gray-300">Copy</button>
+                        </div>
+                    </div>
+
+                    <div>
+                        <h4 class="font-semibold text-gray-700 mb-1">Tags</h4>
+                        <div class="flex flex-wrap gap-1">${tags || '<span class="text-gray-400">No tags</span>'}</div>
+                    </div>
+
+                    <div class="collapsible-section">
+                        <h4 class="collapsible-header font-semibold text-gray-700 cursor-pointer flex items-center justify-between bg-gray-100 px-2 py-1 rounded" onclick="toggleCollapsible(this)">
+                            Comment <span class="chevron text-gray-500">▾</span>
+                        </h4>
+                        <div class="collapsible-content hidden mt-1">
+                            <div class="whitespace-pre-wrap text-sm text-gray-900 border rounded p-2 bg-gray-50">${escapeHtml(data.comment_full || '') || '<span class="text-gray-400">No comment</span>'}</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            `;
+            modal.classList.remove('hidden');
+            document.body.classList.add('overflow-hidden');
+        }
+
+        function toggleCollapsible(header) {
+            const section = header.closest('.collapsible-section');
+            const preview = section.querySelector('.collapsible-preview');
+            const content = section.querySelector('.collapsible-content');
+            const chevron = header.querySelector('.chevron');
+
+            if (content.classList.contains('hidden')) {
+                // Expand
+                content.classList.remove('hidden');
+                if (preview) preview.classList.add('hidden');
+                chevron.classList.add('rotate-180');
+            } else {
+                // Collapse
+                content.classList.add('hidden');
+                if (preview) preview.classList.remove('hidden');
+                chevron.classList.remove('rotate-180');
+            }
+        }
+
+        function expandAllSections() {
+            document.querySelectorAll('#modal-content .collapsible-section').forEach(section => {
+                const preview = section.querySelector('.collapsible-preview');
+                const content = section.querySelector('.collapsible-content');
+                const chevron = section.querySelector('.chevron');
+                if (content) content.classList.remove('hidden');
+                if (preview) preview.classList.add('hidden');
+                if (chevron) chevron.classList.add('rotate-180');
+            });
+        }
+
+        function collapseAllSections() {
+            document.querySelectorAll('#modal-content .collapsible-section').forEach(section => {
+                const preview = section.querySelector('.collapsible-preview');
+                const content = section.querySelector('.collapsible-content');
+                const chevron = section.querySelector('.chevron');
+                if (content) content.classList.add('hidden');
+                if (preview) preview.classList.remove('hidden');
+                if (chevron) chevron.classList.remove('rotate-180');
+            });
+        }
+
+        function copyText(btn) {
+            const text = btn.getAttribute('data-text');
+            navigator.clipboard.writeText(text).then(() => {
+                const orig = btn.textContent;
+                btn.textContent = 'Copied!';
+                setTimeout(() => btn.textContent = orig, 1500);
+            });
+        }
+
+        function closeModal() {
+            document.getElementById('detail-modal').classList.add('hidden');
+            document.body.classList.remove('overflow-hidden');
+        }
+
+        function escapeHtml(str) {
+            if (!str) return '';
+            return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+        }
+
+        function formatNumber(n) {
+            return (n || 0).toLocaleString();
+        }
+
+        // Close modal on backdrop click or Escape
+        document.getElementById('detail-modal').addEventListener('click', e => {
+            if (e.target === e.currentTarget) closeModal();
+        });
+        document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
+
+        // Event delegation for View buttons (RAG)
+        document.addEventListener('click', function (e) {
+            const ragBtn = e.target.closest('.js-view-rag');
+            if (ragBtn) {
+                e.preventDefault();
+                try {
+                    const jsonStr = ragBtn.getAttribute('data-json');
+                    const decoded = jsonStr.replace(/&quot;/g, '"').replace(/&#39;/g, "'").replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&amp;/g, '&');
+                    const data = JSON.parse(decoded);
+                    const section = ragBtn.getAttribute('data-section');
+                    const id = ragBtn.getAttribute('data-id');
+                    showDetail(section, id, data);
+                } catch (err) {
+                    console.error('Error parsing RAG data:', err);
+                    alert('Error loading details. See console for more info.');
+                }
+                return;
+            }
+
+            const voteBtn = e.target.closest('.js-view-vote');
+            if (voteBtn) {
+                e.preventDefault();
+                try {
+                    const jsonStr = voteBtn.getAttribute('data-json');
+                    const decoded = jsonStr.replace(/&quot;/g, '"').replace(/&#39;/g, "'").replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&amp;/g, '&');
+                    const data = JSON.parse(decoded);
+                    showVoteDetail(data);
+                } catch (err) {
+                    console.error('Error parsing vote data:', err);
+                    alert('Error loading details. See console for more info.');
+                }
+                return;
+            }
+        });
+    </script>
+</body>
+
+</html>

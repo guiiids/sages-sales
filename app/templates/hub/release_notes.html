@@ -1,0 +1,444 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Release Notes | SAGE Platform</title>
+     <link rel="icon" type="image/png" href="/static/nav_3.png">
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Roboto+Condensed:wght@400;700&family=Roboto:wght@100;300;400;500&display=swap"
+        rel="stylesheet">
+
+    <!-- Icons -->
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+
+    <!-- Tailwind -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Roboto', 'sans-serif'],
+                        condensed: ['Roboto Condensed', 'sans-serif'],
+                    },
+                    colors: {
+                        agilent: { blue: '#0085D5', dark: '#0B3F63' }
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+
+<body class="bg-slate-50 text-slate-700 min-h-screen flex flex-col">
+
+    <!-- Header -->
+    <nav
+        class="flex-none bg-white border-b border-slate-200 h-20 flex items-center justify-between px-8 sticky top-0 z-50">
+        <div class="flex items-center gap-3">
+            <svg class="h-6 text-agilent-blue" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M12 2L14.4 9.6H22L15.8 14.1L18.2 21.7L12 17.2L5.8 21.7L8.2 14.1L2 9.6H9.6L12 2Z" />
+            </svg>
+            <span class="text-xl font-thin text-slate-800">SAGE <span
+                    class="font-normal text-slate-400">Updates</span></span>
+        </div>
+        <div class="flex gap-4">
+            <a href="./index.html"
+                class="text-sm font-condensed font-bold uppercase tracking-wide text-slate-500 hover:text-agilent-blue transition pt-2">Back
+                to Admin</a>
+            <button
+                class="bg-slate-800 text-white px-5 py-2 rounded shadow hover:bg-slate-700 transition font-condensed font-bold uppercase tracking-wide text-sm">
+                Subscribe to RSS
+            </button>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <header class="relative bg-white border-b border-slate-200 overflow-hidden">
+        <!-- Decorative Dot Grid -->
+        <div class="absolute top-0 right-0 text-slate-100 p-10">
+            <svg width="100" height="100" viewBox="0 0 40 40" fill="currentColor">
+                <circle cx="2" cy="2" r="1.5" />
+                <circle cx="14" cy="2" r="1.5" />
+                <circle cx="26" cy="2" r="1.5" />
+                <circle cx="2" cy="14" r="1.5" />
+                <circle cx="14" cy="14" r="1.5" />
+                <circle cx="26" cy="14" r="1.5" />
+                <circle cx="2" cy="26" r="1.5" />
+                <circle cx="14" cy="26" r="1.5" />
+                <circle cx="26" cy="26" r="1.5" />
+            </svg>
+        </div>
+
+        <div class="max-w-4xl mx-auto px-6 py-16 text-center">
+            <div
+                class="inline-block px-3 py-1 bg-blue-50 text-agilent-blue rounded-full text-xs font-condensed font-bold uppercase tracking-wide mb-4 border border-blue-100">
+                What's New
+            </div>
+            <h1 class="text-5xl font-thin text-slate-800 mb-4">Changelog & Release Notes</h1>
+            <p class="text-xl font-light text-slate-500 max-w-2xl mx-auto">
+                Follow the evolution of the SAGE platform. We deploy updates weekly to improve accuracy and stability.
+            </p>
+        </div>
+
+        <!-- Filter Bar -->
+        <div class="flex justify-center pb-8 gap-2">
+            <button
+                class="px-4 py-1.5 rounded-full bg-slate-800 text-white text-xs font-condensed font-bold uppercase tracking-wide shadow-md">All
+                Updates</button>
+            <button
+                class="px-4 py-1.5 rounded-full bg-white border border-slate-200 text-slate-500 text-xs font-condensed font-bold uppercase tracking-wide hover:border-agilent-blue hover:text-agilent-blue transition">New
+                Features</button>
+            <button
+                class="px-4 py-1.5 rounded-full bg-white border border-slate-200 text-slate-500 text-xs font-condensed font-bold uppercase tracking-wide hover:border-agilent-blue hover:text-agilent-blue transition">Bug
+                Fixes</button>
+            <button
+                class="px-4 py-1.5 rounded-full bg-white border border-slate-200 text-slate-500 text-xs font-condensed font-bold uppercase tracking-wide hover:border-agilent-blue hover:text-agilent-blue transition">Deprecations</button>
+        </div>
+    </header>
+
+    <!-- Main Content: Timeline -->
+    <main class="max-w-4xl mx-auto px-6 py-12">
+
+        <div class="relative border-l border-slate-200 ml-4 md:ml-6 space-y-16">
+
+            <!-- RELEASE ENTRY 0 (Latest) -->
+            <div class="relative pl-8 md:pl-12">
+                <!-- Timeline Dot -->
+                <div
+                    class="absolute -left-3 top-0 h-6 w-6 rounded-full bg-agilent-blue border-4 border-slate-50 shadow-sm flex items-center justify-center">
+                </div>
+
+                <!-- Date Label -->
+                <div class="absolute -left-20 top-0.5 text-right w-12 hidden md:block">
+                    <span class="block text-sm font-bold text-slate-700">Jan 26</span>
+                    <span class="block text-xs text-slate-400">2026</span>
+                </div>
+
+                <!-- Card -->
+                <article
+                    class="bg-white border border-slate-200 rounded-xl shadow-sm hover:shadow-md transition-shadow overflow-hidden group">
+                    <div class="bg-blue-50/50 px-6 py-4 border-b border-slate-100 flex items-center justify-between">
+                        <div class="flex items-center gap-3">
+                            <h2 class="text-2xl font-thin text-slate-800">SAGE v2.0</h2>
+                            <span
+                                class="px-2 py-0.5 rounded bg-agilent-blue text-white text-[10px] font-condensed font-bold uppercase border border-agilent-blue">Latest
+                                Release</span>
+                        </div>
+                        <span class="md:hidden text-xs text-slate-400">Jan 26, 2026</span>
+                    </div>
+
+                    <div class="p-6 md:p-8">
+                        <div class="mb-8">
+                            <h3 class="text-lg font-condensed font-bold text-agilent-blue uppercase tracking-wide mb-4">
+                                Major Update: The Intelligence & Governance Release
+                            </h3>
+                            <p class="font-light text-slate-600 mb-4">
+                                <strong>Release focus:</strong> Persona-driven logic, automated verification, and
+                                industrial-grade observability.
+                            </p>
+                            <p class="font-light text-slate-600">
+                                SAGE v2.0 introduces a fundamental shift in how the platform handles complex reasoning
+                                and governed responses. By integrating persona-aware orchestration and a real-time
+                                verification loop, we've enabled safer, more accurate, and more professional AI
+                                interactions.
+                            </p>
+                        </div>
+
+                        <div class="grid md:grid-cols-2 gap-8">
+                            <!-- Column 1 -->
+                            <div class="space-y-6">
+                                <div>
+                                    <h4 class="text-xs font-condensed font-bold text-slate-400 uppercase mb-3">
+                                        Experimental Mode & Personas</h4>
+                                    <ul class="space-y-3">
+                                        <li class="flex items-start gap-2 text-sm text-slate-600">
+                                            <i class="ph-bold ph-flask text-purple-500 mt-1"></i>
+                                            <div>
+                                                <strong>Enabled Experimental Mode</strong><br />
+                                                <span class="font-light">A session-based dual-mode system allowing
+                                                    seamless toggling between Production and Experimental
+                                                    configurations.</span>
+                                            </div>
+                                        </li>
+                                        <li class="flex items-start gap-2 text-sm text-slate-600">
+                                            <i class="ph-bold ph-users text-blue-500 mt-1"></i>
+                                            <div>
+                                                <strong>Persona-Aware Intelligence</strong><br />
+                                                <span class="font-light">Support for specialized personas like the
+                                                    <strong>Scientist</strong>, enabling tailored reasoning
+                                                    patterns.</span>
+                                            </div>
+                                        </li>
+                                        <li class="flex items-start gap-2 text-sm text-slate-600">
+                                            <i class="ph-bold ph-circles-three-plus text-green-500 mt-1"></i>
+                                            <div>
+                                                <strong>Hybrid Search Implementation</strong><br />
+                                                <span class="font-light">Combined keyword and semantic vector search for
+                                                    unmatched retrieval accuracy.</span>
+                                            </div>
+                                        </li>
+                                    </ul>
+                                </div>
+
+                                <div>
+                                    <h4 class="text-xs font-condensed font-bold text-slate-400 uppercase mb-3">
+                                        Verification & Accuracy</h4>
+                                    <ul class="space-y-3">
+                                        <li class="flex items-start gap-2 text-sm text-slate-600">
+                                            <i class="ph-bold ph-shield-check text-indigo-500 mt-1"></i>
+                                            <div>
+                                                <strong>Automated Correction Loop</strong><br />
+                                                <span class="font-light">Post-stream self-correction that automatically
+                                                    rewrites responses if they fail groundedness checks.</span>
+                                            </div>
+                                        </li>
+                                        <li class="flex items-start gap-2 text-sm text-slate-600">
+                                            <i class="ph-bold ph-fingerprint text-orange-500 mt-1"></i>
+                                            <div>
+                                                <strong>Groundedness Checker</strong><br />
+                                                <span class="font-light">Real-time validation of AI claims against
+                                                    retrieved sources to eliminate hallucinations.</span>
+                                            </div>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </div>
+
+                            <!-- Column 2 -->
+                            <div class="space-y-6">
+                                <div>
+                                    <h4 class="text-xs font-condensed font-bold text-slate-400 uppercase mb-3">Premium
+                                        UI & Design</h4>
+                                    <ul class="space-y-3">
+                                        <li class="flex items-start gap-2 text-sm text-slate-600">
+                                            <i class="ph-bold ph-sparkle text-pink-500 mt-1"></i>
+                                            <div>
+                                                <strong>Glassmorphism Status Shield</strong><br />
+                                                <span class="font-light">A new floating UI for Experimental Mode
+                                                    providing visual feedback on security enforcement.</span>
+                                            </div>
+                                        </li>
+                                        <li class="flex items-start gap-2 text-sm text-slate-600">
+                                            <i class="ph-bold ph-moon text-indigo-600 mt-1"></i>
+                                            <div>
+                                                <strong>Dark Mode 2.0</strong><br />
+                                                <span class="font-light">Refined high-contrast theme with full mobile
+                                                    responsiveness across all components.</span>
+                                            </div>
+                                        </li>
+                                        <li class="flex items-start gap-2 text-sm text-slate-600">
+                                            <i class="ph-bold ph-broadcast text-blue-400 mt-1"></i>
+                                            <div>
+                                                <strong>Dynamic UI Feedback</strong><br />
+                                                <span class="font-light">New "Verification States" showing real-time
+                                                    status of AI self-critique and correction.</span>
+                                            </div>
+                                        </li>
+                                    </ul>
+                                </div>
+
+                                <div>
+                                    <h4 class="text-xs font-condensed font-bold text-slate-400 uppercase mb-3">Quality
+                                        Assurance</h4>
+                                    <ul class="space-y-3">
+                                        <li class="flex items-start gap-2 text-sm text-slate-600">
+                                            <i class="ph-bold ph-test-tube text-slate-500 mt-1"></i>
+                                            <div>
+                                                <strong>Enhanced Automated Testing</strong><br />
+                                                <span class="font-light">Implementation of Phase 1 Integration and Phase
+                                                    2 Performance Testing suites.</span>
+                                            </div>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </article>
+            </div>
+
+            <!-- RELEASE ENTRY 1 -->
+            <div class="relative pl-8 md:pl-12">
+                <!-- Timeline Dot -->
+                <div
+                    class="absolute -left-3 top-0 h-6 w-6 rounded-full bg-agilent-blue border-4 border-slate-50 shadow-sm flex items-center justify-center">
+                </div>
+
+                <!-- Date Label -->
+                <div class="absolute -left-20 top-0.5 text-right w-12 hidden md:block">
+                    <span class="block text-sm font-bold text-slate-700">Dec 05</span>
+                    <span class="block text-xs text-slate-400">2025</span>
+                </div>
+
+                <!-- Card -->
+                <article
+                    class="bg-white border border-slate-200 rounded-xl shadow-sm hover:shadow-md transition-shadow overflow-hidden group">
+                    <div class="bg-slate-50 px-6 py-4 border-b border-slate-100 flex items-center justify-between">
+                        <div class="flex items-center gap-3">
+                            <h2 class="text-2xl font-thin text-slate-800">SAGE v1.5</h2>
+                        </div>
+                        <span class="md:hidden text-xs text-slate-400">Dec 05, 2025</span>
+                    </div>
+
+                    <div class="p-6 md:p-8">
+                        <div class="mb-6">
+                            <h3 class="text-lg font-condensed font-bold text-agilent-blue uppercase tracking-wide mb-4">
+                                Platform Update
+                            </h3>
+                            <p class="font-light text-slate-600 mb-4">
+                                <strong>Release focus:</strong> Accuracy, usability, and overall experience
+                            </p>
+                            <p class="font-light text-slate-600 mb-6">
+                                SAGE v1.5 represents a meaningful step forward in how the platform delivers answers,
+                                supports users across devices, and adapts to evolving AI capabilities. This release
+                                prioritizes answer quality, trust, and ease of use, while strengthening the underlying
+                                foundation for future enhancements.
+                            </p>
+                        </div>
+
+                        <div class="mb-6">
+                            <h4 class="text-xs font-condensed font-bold text-slate-400 uppercase mb-3">New Features</h4>
+                            <ul class="space-y-3">
+                                <li class="flex items-start gap-2 text-sm text-slate-600">
+                                    <i class="ph-bold ph-check text-green-500 mt-1"></i>
+                                    <div>
+                                        <strong>Next-generation AI model support</strong><br />
+                                        <span class="font-light">SAGE now supports the latest GPT-5 family models,
+                                            enabling clearer responses, stronger reasoning, and improved handling of
+                                            complex questions.</span>
+                                    </div>
+                                </li>
+                                <li class="flex items-start gap-2 text-sm text-slate-600">
+                                    <i class="ph-bold ph-check text-green-500 mt-1"></i>
+                                    <div>
+                                        <strong>Improved citation confidence</strong><br />
+                                        <span class="font-light">A new ranking layer has been introduced to better
+                                            prioritize the most relevant sources, helping ensure responses are grounded
+                                            in the best available information.</span>
+                                    </div>
+                                </li>
+                                <li class="flex items-start gap-2 text-sm text-slate-600">
+                                    <i class="ph-bold ph-check text-green-500 mt-1"></i>
+                                    <div>
+                                        <strong>Speech-to-Text input</strong><br />
+                                        <span class="font-light">Users can now interact with SAGE using voice input,
+                                            making it easier and faster to ask questions in a more natural way.</span>
+                                    </div>
+                                </li>
+                                <li class="flex items-start gap-2 text-sm text-slate-600">
+                                    <i class="ph-bold ph-check text-green-500 mt-1"></i>
+                                    <div>
+                                        <strong>Enhanced mobile experience</strong><br />
+                                        <span class="font-light">The interface has been refined to work more smoothly on
+                                            mobile devices, with improved layout, readability, and interaction in the
+                                            chat experience.</span>
+                                    </div>
+                                </li>
+                            </ul>
+                        </div>
+
+                        <div>
+                            <h4 class="text-xs font-condensed font-bold text-slate-400 uppercase mb-3">Improvements</h4>
+                            <ul class="space-y-2">
+                                <li class="flex items-start gap-2 text-sm text-slate-600">
+                                    <i class="ph-bold ph-check text-green-500 mt-1"></i>
+                                    <div>
+                                        <strong>Overall answer quality</strong><br />
+                                        <span class="font-light">Refinements across prompts and response handling
+                                            improve clarity, consistency, and relevance of answers.</span>
+                                    </div>
+                                </li>
+                                <li class="flex items-start gap-2 text-sm text-slate-600">
+                                    <i class="ph-bold ph-check text-green-500 mt-1"></i>
+                                    <div>
+                                        <strong>Performance and responsiveness</strong><br />
+                                        <span class="font-light">Behind-the-scenes optimizations reduce latency and
+                                            improve system stability, resulting in a more reliable user
+                                            experience.</span>
+                                    </div>
+                                </li>
+                                <li class="flex items-start gap-2 text-sm text-slate-600">
+                                    <i class="ph-bold ph-check text-green-500 mt-1"></i>
+                                    <div>
+                                        <strong>Platform maintainability</strong><br />
+                                        <span class="font-light">Internal code enhancements strengthen reliability and
+                                            delivery, laying the groundwork for future releases.</span>
+                                    </div>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </article>
+            </div>
+
+
+
+
+            <!-- RELEASE ENTRY 3 -->
+            <div class="relative pl-8 md:pl-12">
+                <!-- Timeline Dot -->
+                <div class="absolute -left-2 top-0 h-4 w-4 rounded-full bg-slate-300 border-2 border-white shadow-sm">
+                </div>
+
+                <!-- Date Label -->
+                <div class="absolute -left-20 top-0 text-right w-12 hidden md:block">
+                    <span class="block text-sm font-bold text-slate-500">Sept 12</span>
+                    <span class="block text-xs text-slate-400">2025</span>
+                </div>
+
+                <!-- Card -->
+                <article
+                    class="bg-white border border-slate-200 rounded-xl shadow-sm p-6 md:p-8 hover:border-agilent-blue transition-colors cursor-pointer">
+                    <div class="flex items-center justify-between mb-4">
+                        <div class="flex items-center gap-3">
+                            <h2 class="text-xl font-thin text-slate-700">SAGE v1.1</h2>
+                            <span
+                                class="px-2 py-0.5 rounded bg-slate-100 text-slate-600 text-[10px] font-condensed font-bold uppercase border border-slate-200">Dark
+                                Mode</span>
+                        </div>
+                    </div>
+
+                    <p class="font-light text-slate-600 mb-4">
+                        <strong>First inclusion of professional Dark Mode.</strong> This update introduces a
+                        high-performance theme designed for low-light environments, ensuring visual comfort during
+                        extended analysis sessions.
+                    </p>
+
+                    <div class="flex gap-2">
+                        <span class="text-xs bg-slate-100 px-2 py-1 rounded text-slate-500">#VisualComfort</span>
+                        <span class="text-xs bg-slate-100 px-2 py-1 rounded text-slate-500">#HighContrast</span>
+                        <span class="text-xs bg-slate-100 px-2 py-1 rounded text-slate-500">#DarkMode</span>
+                    </div>
+                </article>
+            </div>
+
+        </div>
+
+        <!-- End of Timeline -->
+        <div class="mt-16 text-center border-t border-slate-200 pt-8">
+            <button
+                class="text-slate-500 hover:text-agilent-blue font-condensed font-bold uppercase tracking-wide text-sm flex items-center justify-center gap-2 mx-auto transition">
+                <i class="ph-bold ph-caret-down"></i> Load Older Releases
+            </button>
+        </div>
+
+    </main>
+
+    <footer class="text-center py-10 bg-white border-t border-slate-200 mt-auto">
+        <p class="text-slate-400 text-xs font-condensed uppercase tracking-wider mb-2">
+            © Agilent Technologies, Inc. 2026
+        </p>
+        <p class="text-slate-300 text-xs">
+            Build: 2026.01.26-prod
+        </p>
+    </footer>
+
+</body>
+
+</html>

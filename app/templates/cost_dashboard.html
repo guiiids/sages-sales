@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cost Analysis Dashboard - RAGKA</title>
+     <link rel="icon" type="image/png" href="/static/nav_3.png">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <style>
+        body {
+            font-size: 13px;
+        }
+
+        .metric-card {
+            transition: transform 0.2s;
+        }
+
+        .metric-card:hover {
+            transform: translateY(-2px);
+        }
+    </style>
+</head>
+
+<body class="bg-gray-50">
+    <!-- Navigation -->
+    <nav class="bg-white shadow-sm border-b">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-14">
+                <div class="flex items-center">
+                    <h1 class="text-lg font-semibold text-gray-900">RAGKA Observability</h1>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <a href="/dashboard/executive" class="text-gray-600 hover:text-gray-900 text-xs">Executive</a>
+                    <a href="/dashboard/cost" class="text-blue-600 font-medium text-xs">Cost</a>
+                    <a href="/dashboard/performance" class="text-gray-600 hover:text-gray-900 text-xs">Performance</a>
+                    <a href="/dashboard/engagement" class="text-gray-600 hover:text-gray-900 text-xs">Engagement</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+        <!-- Header -->
+        <div class="mb-6 flex justify-between items-center">
+            <h2 class="text-xl font-bold text-gray-900">Cost Analysis Dashboard</h2>
+            <div class="flex items-center space-x-3">
+                <label class="text-xs text-gray-600">Time Range:</label>
+                <select id="timeRange"
+                    class="text-xs border border-gray-300 rounded px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    <option value="7">Last 7 Days</option>
+                    <option value="30" selected>Last 30 Days</option>
+                    <option value="90">Last 90 Days</option>
+                </select>
+                <button onclick="refreshData()"
+                    class="bg-blue-600 text-white px-4 py-1.5 rounded text-xs hover:bg-blue-700">
+                    Refresh
+                </button>
+            </div>
+        </div>
+
+        <!-- Cost Alert Banner -->
+        <div class="bg-yellow-50 border-l-4 border-yellow-400 p-4 mb-6">
+            <div class="flex">
+                <div class="flex-shrink-0">
+                    <svg class="h-5 w-5 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd"
+                            d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z"
+                            clip-rule="evenodd"></path>
+                    </svg>
+                </div>
+                <div class="ml-3">
+                    <p class="text-xs text-yellow-700">
+                        <strong>Note:</strong> Cost estimates are based on GPT-4 pricing ($2 per 1M tokens). Adjust
+                        pricing in the code if using different models.
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- KPI Cards -->
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+            <!-- Total Cost -->
+            <div class="bg-white rounded-lg shadow metric-card p-5">
+                <div class="text-xs text-gray-500 font-medium mb-2">Total Cost</div>
+                <div class="flex items-baseline">
+                    <div class="text-xs text-gray-500">$</div>
+                    <div class="text-2xl font-bold text-gray-900" id="total-cost">-</div>
+                </div>
+                <div class="text-xs text-gray-500 mt-1">Period total</div>
+            </div>
+
+            <!-- Cost per Query -->
+            <div class="bg-white rounded-lg shadow metric-card p-5">
+                <div class="text-xs text-gray-500 font-medium mb-2">Cost per Query</div>
+                <div class="flex items-baseline">
+                    <div class="text-xs text-gray-500">$</div>
+                    <div class="text-2xl font-bold text-gray-900" id="cost-per-query">-</div>
+                </div>
+                <div class="text-xs text-gray-500 mt-1">Average</div>
+            </div>
+
+            <!-- Daily Average -->
+            <div class="bg-white rounded-lg shadow metric-card p-5">
+                <div class="text-xs text-gray-500 font-medium mb-2">Daily Average</div>
+                <div class="flex items-baseline">
+                    <div class="text-xs text-gray-500">$</div>
+                    <div class="text-2xl font-bold text-gray-900" id="daily-avg">-</div>
+                </div>
+                <div class="text-xs text-gray-500 mt-1">Per day</div>
+            </div>
+
+            <!-- Projected Monthly -->
+            <div class="bg-white rounded-lg shadow metric-card p-5">
+                <div class="text-xs text-gray-500 font-medium mb-2">Monthly Projection</div>
+                <div class="flex items-baseline">
+                    <div class="text-xs text-gray-500">$</div>
+                    <div class="text-2xl font-bold text-blue-600" id="monthly-projection">-</div>
+                </div>
+                <div class="text-xs text-gray-500 mt-1">Estimated</div>
+            </div>
+        </div>
+
+        <!-- Charts Row 1 -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+            <!-- Daily Cost Trend -->
+            <div class="bg-white rounded-lg shadow p-5">
+                <h3 class="text-sm font-semibold text-gray-900 mb-4">Daily Cost Trend</h3>
+                <div style="height: 200px; max-height: 200px;">
+                    <canvas id="cost-trend-chart"></canvas>
+                </div>
+            </div>
+
+            <!-- Cost by Model -->
+            <div class="bg-white rounded-lg shadow p-5">
+                <h3 class="text-sm font-semibold text-gray-900 mb-4">Cost by Model</h3>
+                <div style="height: 200px; max-height: 200px;">
+                    <canvas id="model-cost-chart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Cost Breakdown Table -->
+        <div class="bg-white rounded-lg shadow p-5">
+            <h3 class="text-sm font-semibold text-gray-900 mb-4">Cost Breakdown by Model</h3>
+            <div class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-gray-200">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Model</th>
+                            <th class="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase">Total Cost</th>
+                            <th class="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase">% of Total</th>
+                            <th class="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase">Queries</th>
+                            <th class="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase">Avg Cost/Query
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody id="cost-table-body" class="bg-white divide-y divide-gray-200">
+                        <tr>
+                            <td colspan="5" class="px-4 py-4 text-center text-xs text-gray-500">Loading...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let costTrendChart, modelCostChart;
+
+        const colors = {
+            primary: 'rgb(59, 130, 246)',
+            success: 'rgb(34, 197, 94)',
+            warning: 'rgb(251, 191, 36)',
+            danger: 'rgb(239, 68, 68)',
+            purple: 'rgb(168, 85, 247)',
+            gray: 'rgb(156, 163, 175)'
+        };
+
+        async function refreshData() {
+            const timeRange = document.getElementById('timeRange').value;
+            const startDate = timeRange === 'all' ? null : getStartDate(timeRange);
+
+            await loadCostMetrics(startDate);
+        }
+
+        function getStartDate(days) {
+            if (days === 'all') return null;
+            const date = new Date();
+            date.setDate(date.getDate() - parseInt(days));
+            return date.toISOString().split('T')[0];
+        }
+
+        async function loadCostMetrics(startDate) {
+            try {
+                const url = startDate
+                    ? `/api/dashboard/cost-metrics?start_date=${startDate}`
+                    : '/api/dashboard/cost-metrics';
+                const response = await fetch(url);
+                const data = await response.json();
+
+                // Update KPI cards
+                document.getElementById('total-cost').textContent = data.total_cost.toFixed(2);
+                document.getElementById('cost-per-query').textContent = data.cost_per_query.toFixed(4);
+
+                // Calculate daily average
+                const days = data.daily_trend.dates.length || 1;
+                const dailyAvg = data.total_cost / days;
+                document.getElementById('daily-avg').textContent = dailyAvg.toFixed(2);
+
+                // Project monthly cost
+                const monthlyProjection = dailyAvg * 30;
+                document.getElementById('monthly-projection').textContent = monthlyProjection.toFixed(2);
+
+                // Update charts
+                updateCostTrendChart(data.daily_trend);
+                updateModelCostChart(data.by_model);
+                updateCostTable(data.by_model);
+
+            } catch (error) {
+                console.error('Error loading cost metrics:', error);
+            }
+        }
+
+        function updateCostTrendChart(data) {
+            if (costTrendChart) costTrendChart.destroy();
+
+            const ctx = document.getElementById('cost-trend-chart').getContext('2d');
+            costTrendChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: data.dates,
+                    datasets: [{
+                        label: 'Daily Cost ($)',
+                        data: data.costs,
+                        borderColor: colors.danger,
+                        backgroundColor: colors.danger + '20',
+                        tension: 0.3,
+                        fill: true
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                callback: function (value) {
+                                    return '$' + value.toFixed(2);
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        function updateModelCostChart(data) {
+            if (modelCostChart) modelCostChart.destroy();
+
+            const ctx = document.getElementById('model-cost-chart').getContext('2d');
+            modelCostChart = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: data.models,
+                    datasets: [{
+                        data: data.costs,
+                        backgroundColor: [
+                            colors.primary,
+                            colors.success,
+                            colors.warning,
+                            colors.purple,
+                            colors.gray
+                        ]
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: { font: { size: 11 } }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function (context) {
+                                    return context.label + ': $' + context.parsed.toFixed(2);
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        function updateCostTable(data) {
+            const tbody = document.getElementById('cost-table-body');
+            const totalCost = data.costs.reduce((a, b) => a + b, 0);
+
+            if (data.models.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="5" class="px-4 py-4 text-center text-xs text-gray-500">No data available</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = data.models.map((model, i) => {
+                const cost = data.costs[i];
+                const percentage = (cost / totalCost * 100).toFixed(1);
+                return `
+                    <tr>
+                        <td class="px-4 py-3 text-xs text-gray-900">${model}</td>
+                        <td class="px-4 py-3 text-xs text-gray-900 text-right">$${cost.toFixed(2)}</td>
+                        <td class="px-4 py-3 text-xs text-gray-500 text-right">${percentage}%</td>
+                        <td class="px-4 py-3 text-xs text-gray-500 text-right">-</td>
+                        <td class="px-4 py-3 text-xs text-gray-500 text-right">-</td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        // Initial load
+        refreshData();
+
+        // Auto-refresh every 5 minutes
+        setInterval(refreshData, 300000);
+    </script>
+</body>
+
+</html>

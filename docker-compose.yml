@@ -1,0 +1,27 @@
+version: '3.8'
+
+services:
+  web:
+    build:
+      context: .
+    image: guivieiraa/ragka-v1_5:latest
+    env_file:
+      - .env
+    ports:
+      - "${PORT:-8000}:8000"
+    restart: unless-stopped
+    command: >
+      sh -c "/startup.sh python export_feedback.py & gunicorn main:app --bind 0.0.0.0:8000"
+    volumes:
+      - azure-rag-assistant-feedback:/app/feedback_data
+      - azure-rag-assistant-logs:/app/logs
+      - azure-rag-usage-logs:/app/logs/usage
+      - azure-rag-error-logs:/app/logs/errors
+      - azure-rag-feedback-fallback:/app/data/fallback
+
+volumes:
+  azure-rag-assistant-feedback:
+  azure-rag-assistant-logs:
+  azure-rag-usage-logs:
+  azure-rag-error-logs:
+  azure-rag-feedback-fallback:

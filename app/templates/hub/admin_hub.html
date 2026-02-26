@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SAGE Admin Hub | Agilent</title>
+     <link rel="icon" type="image/png" href="/static/nav_3.png">
+    <!-- Fonts: Roboto & Roboto Condensed -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto+Condensed:wght@400;700&family=Roboto:wght@100;300;400;500&display=swap" rel="stylesheet">
+    
+    <!-- Icons: Phosphor Icons (Light/Thin) -->
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Roboto', 'sans-serif'],
+                        condensed: ['Roboto Condensed', 'sans-serif'],
+                    },
+                    colors: {
+                        agilent: {
+                            blue: '#0085D5',
+                            dark: '#0B3F63',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-white text-slate-700 min-h-screen flex flex-col relative overflow-x-hidden">
+
+    <!-- Decorative Dot Grid (Top Left) -->
+    <div class="absolute top-24 left-8 text-agilent-blue/80 hidden xl:block">
+        <svg width="40" height="40" viewBox="0 0 40 40" fill="currentColor">
+            <circle cx="2" cy="2" r="2" /><circle cx="14" cy="2" r="2" /><circle cx="26" cy="2" r="2" />
+            <circle cx="2" cy="14" r="2" /><circle cx="14" cy="14" r="2" /><circle cx="26" cy="14" r="2" />
+            <circle cx="2" cy="26" r="2" /><circle cx="14" cy="26" r="2" /><circle cx="26" cy="26" r="2" />
+        </svg>
+    </div>
+
+    <!-- Header -->
+    <header class="w-full flex items-center justify-between px-8 py-5 border-b border-slate-100 bg-white/90 backdrop-blur-sm fixed top-0 z-50">
+        <div class="flex items-center gap-3">
+             <!-- Agilent "Spark" Logo (Simplified SVG) -->
+             <svg class="h-6 text-agilent-blue" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M12 2L14.4 9.6H22L15.8 14.1L18.2 21.7L12 17.2L5.8 21.7L8.2 14.1L2 9.6H9.6L12 2Z" />
+            </svg>
+            <span class="text-lg font-condensed font-bold tracking-tight text-slate-800">AGILENT <span class="font-normal text-slate-500">SAGE</span></span>
+        </div>
+        
+        <div class="flex items-center gap-4">
+            <div class="text-right hidden sm:block">
+                <p class="text-sm font-bold font-condensed uppercase text-slate-600">{{user_name}}</p>
+            </div>
+            <div class="h-8 w-8 bg-agilent-blue rounded-full text-white flex items-center justify-center font-condensed font-bold text-sm">
+                {{user_name[0]}}
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="flex-grow flex flex-col items-center justify-center pt-28 pb-10 px-6">
+        
+        <!-- Hero Title -->
+        <div class="text-center mb-16 max-w-2xl relative">
+            <!-- Vertical Dotted Line Decoration -->
+            <div class="absolute -left-12 top-0 bottom-0 border-l-2 border-dotted border-slate-200 hidden md:block"></div>
+            
+            <h1 class="text-5xl md:text-6xl font-thin text-slate-800 mb-4 tracking-tight">
+                Admin Hub
+            </h1>
+             <!-- Vertical Dotted Line Decoration -->
+            <div class="absolute -right-12 top-0 bottom-0 border-l-2 border-dotted border-slate-200 hidden md:block"></div>
+<!--            <p class="text-xl font-light text-slate-500">-->
+<!--                Manage performance, queries, and citation stability.-->
+<!--            </p>-->
+        </div>
+
+        <!-- Navigation Grid -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 w-full max-w-6xl">
+
+            {% for dashboard in dashboards %}
+            <!-- Card-->
+            <a href="{{ dashboard.link }}" class="group bg-white border border-slate-100 rounded-xl p-10 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 flex flex-col items-center text-center">
+                {% if dashboard.isNew %}
+                <div class="absolute top-4 right-4 bg-orange-100 text-orange-600 text-[10px] font-bold font-condensed px-2 py-1 rounded uppercase">New</div>
+                {% endif %}
+                <i class="ph-light ph-check-square-offset text-6xl text-agilent-blue mb-6 group-hover:scale-110 transition-transform"></i>
+                <h3 class="text-lg font-condensed font-bold text-agilent-blue uppercase tracking-wide mb-2">{{ dashboard.title }}</h3>
+                <p class="text-sm font-light text-slate-500">{{ dashboard.description }}</p>
+            </a>
+            {% endfor %}
+
+        </div>
+    </main>
+
+    <footer class="text-center py-8 text-slate-300 text-xs font-condensed uppercase tracking-wider">
+        © Agilent Technologies, Inc. 2025
+    </footer>
+
+</body>
+</html>
