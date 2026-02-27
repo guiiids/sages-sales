@@ -181,7 +181,7 @@ CRITICAL: The original_response field must ALWAYS contain your complete, initial
 
 # Valid modes and personas
 VALID_MODES = ('production', 'experimental')
-VALID_PERSONAS = ('explorer', 'intermediate', 'balanced_plus', 'scientist')
+VALID_PERSONAS = ('explorer', 'intermediate', 'balanced_plus', 'balanced_plus_ps', 'balanced_plus_ta', 'scientist')
 VALID_REASONING_EFFORTS = ('low', 'medium', 'high')
 VALID_VERBOSITIES = ('low', 'medium', 'high')
 
@@ -444,6 +444,172 @@ Do NOT pad your response with unnecessary caveats or disclaimers to appear cauti
         
         # Description
         'description': 'Enhanced balanced pipeline with selective metacognition system prompt — decomposition and synthesis without full RADAR correction overhead'
+    },
+
+    'balanced_plus_ps': {
+        # 003-PS: Balanced+ · Product Specialist
+        # Inherits 002 engine settings, overrides system prompt for Sales positioning
+        
+        # Search configuration — same as balanced_plus (002 engine)
+        'search_top': 50,
+        'search_knn': 40,
+        
+        # Pipeline feature flags — same as balanced_plus (002 engine)
+        'enable_query_enhancement': True,
+        'enable_reranker': True,
+        'enable_self_critique': True,
+        'async_self_critique': True,
+        'enable_groundedness_check': False,
+        'enable_correction_loop': False,
+        'enable_history_summarization': True,
+        
+        # Context preparation
+        'max_context_chunks': 7,
+        
+        # Response settings
+        'max_tokens': 1500,
+        'temperature': 0.5,
+        
+        # GPT-5 Responses API Configuration
+        'use_responses_api': True,
+        'responses_api_version': '2025-03-01-preview',
+        'reasoning_effort': 'medium',
+        'verbosity': 'medium',
+        
+        # System Prompt Configuration — PRODUCT SPECIALIST
+        'system_prompt_mode': 'Override',
+        'system_prompt': """
+You are a precise and insightful Product Specialist with deep expertise in Agilent's analytical instrumentation portfolio, helping Sales position products to meet customer needs.
+
+Before responding:
+1. **Decompose**: Identify the core product question — positioning, differentiation, or feature inquiry
+2. **Retrieve & Verify**: Find direct answers in the provided sources. Make only verified product claims
+3. **Position**: Lead with Agilent value. Highlight documented advantages over competitors, if known
+4. **Calibrate**: Match confidence to evidence strength — strong source → state directly; no source → say so honestly
+
+Respond with:
+- Agilent product answer first
+- Competitive differentiation only when source-supported
+- Sales-ready language reps can relay to customers
+
+### Citation Requirements (MANDATORY):
+- Incorporate inline citations in the format [id] **only when the <source> tag includes an explicit id attribute** (e.g., <source id="1">).
+- Do not cite if the <source> tag does not contain an id attribute.
+- **IMPORTANT: For follow-up questions, continue to use citations [id] when referencing information from the provided context.**
+
+Do NOT fabricate competitive claims or product specs. Be direct, confident, and grounded.
+        """,
+        
+        # Verification policy settings — same as balanced_plus
+        'verification_policies': {
+            'allow_paraphrasing_at_confidence': 0.90,
+            'allow_semantic_direct': True,
+            'allow_speculative_examples': False,
+            'strict_only_mode': False,
+        },
+        
+        # Self-critique policy
+        'self_critique_policy': 'Product Specialist Mode: Selective metacognition with product positioning focus. Allow semantic paraphrasing and direct entailment. Forbid speculative claims. Require confidence >= 0.90 for paraphrasing.',
+        
+        # RADAR Correction Loop Configuration — same as balanced_plus
+        'enable_radar_correction': True,
+        'radar_correction_temperature': 0.5,
+        'radar_correction_max_rounds': 1,
+        'radar_correction_thresholds': {
+            'query_resolution': 0.65,
+            'scope_discipline': 0.65,
+            'completeness': 0.65,
+            'clarity': 0.60,
+            'actionability': 0.55,
+            'citation_hygiene': 0.75,
+        },
+        'self_correct_mode': 'evaluate_only',
+        
+        # Description
+        'description': 'Balanced+ engine with Product Specialist persona — Agilent sales positioning, verified claims, competitive differentiation'
+    },
+
+    'balanced_plus_ta': {
+        # 003-TA: Balanced+ · Technical Assistant
+        # Inherits 002 engine settings, overrides system prompt for technical depth
+        
+        # Search configuration — same as balanced_plus (002 engine)
+        'search_top': 50,
+        'search_knn': 40,
+        
+        # Pipeline feature flags — same as balanced_plus (002 engine)
+        'enable_query_enhancement': True,
+        'enable_reranker': True,
+        'enable_self_critique': True,
+        'async_self_critique': True,
+        'enable_groundedness_check': False,
+        'enable_correction_loop': False,
+        'enable_history_summarization': True,
+        
+        # Context preparation
+        'max_context_chunks': 7,
+        
+        # Response settings
+        'max_tokens': 1500,
+        'temperature': 0.5,
+        
+        # GPT-5 Responses API Configuration
+        'use_responses_api': True,
+        'responses_api_version': '2025-03-01-preview',
+        'reasoning_effort': 'medium',
+        'verbosity': 'medium',
+        
+        # System Prompt Configuration — TECHNICAL ASSISTANT
+        'system_prompt_mode': 'Override',
+        'system_prompt': """
+You are a knowledgeable Technical Assistant with deep expertise in Agilent's analytical instrumentation, helping technical teams understand product capabilities, configurations, and troubleshooting.
+
+Before responding:
+1. **Classify**: Determine the query type — how-to, troubleshooting, capability check, or technical comparison
+2. **Retrieve & Ground**: Find direct answers in the provided sources. For specs and procedures, cite exactly
+3. **Explain**: Provide technical depth appropriate to the question — concise for simple lookups, detailed for complex workflows
+4. **Flag Gaps**: If the sources don't cover the question fully, state what's missing rather than extrapolating
+
+Respond with:
+- Direct technical answer first
+- Step-by-step procedures when applicable
+- Relevant specifications or configuration details from the sources
+
+### Citation Requirements (MANDATORY):
+- Incorporate inline citations in the format [id] **only when the <source> tag includes an explicit id attribute** (e.g., <source id="1">).
+- Do not cite if the <source> tag does not contain an id attribute.
+- **IMPORTANT: For follow-up questions, continue to use citations [id] when referencing information from the provided context.**
+
+Do NOT guess at specifications or procedures not in the sources. Precision over completeness.
+        """,
+        
+        # Verification policy settings — same as balanced_plus
+        'verification_policies': {
+            'allow_paraphrasing_at_confidence': 0.90,
+            'allow_semantic_direct': True,
+            'allow_speculative_examples': False,
+            'strict_only_mode': False,
+        },
+        
+        # Self-critique policy
+        'self_critique_policy': 'Technical Assistant Mode: Selective metacognition with technical depth focus. Allow semantic paraphrasing and direct entailment. Forbid speculative claims on specs or procedures. Require confidence >= 0.90 for paraphrasing.',
+        
+        # RADAR Correction Loop Configuration — same as balanced_plus
+        'enable_radar_correction': True,
+        'radar_correction_temperature': 0.5,
+        'radar_correction_max_rounds': 1,
+        'radar_correction_thresholds': {
+            'query_resolution': 0.65,
+            'scope_discipline': 0.65,
+            'completeness': 0.65,
+            'clarity': 0.60,
+            'actionability': 0.55,
+            'citation_hygiene': 0.75,
+        },
+        'self_correct_mode': 'evaluate_only',
+        
+        # Description
+        'description': 'Balanced+ engine with Technical Assistant persona — technical depth, troubleshooting, configuration guidance'
     },
     
     'scientist': {

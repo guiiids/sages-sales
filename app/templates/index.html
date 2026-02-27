@@ -2599,6 +2599,8 @@
             <option value="explorer">Explorer</option>
             <option value="intermediate">Balanced</option>
             <option value="balanced_plus">Balanced Plus</option>
+            <option value="balanced_plus_ps">Product Specialist</option>
+            <option value="balanced_plus_ta">Technical Assistant</option>
             <option value="scientist">Scientist</option>
           </select>
 
@@ -2647,28 +2649,13 @@
             <!-- SAGE Mode Selector (Gemini-style pill dropdown) -->
             <div class="sage-mode-selector" id="sage-mode-selector">
               <button class="sage-mode-trigger" id="sage-mode-trigger">
-                <span id="sage-mode-label">Standard</span>
+                <span id="sage-mode-label">Balanced+</span>
                 <i class="fa-solid fa-chevron-down chevron"></i>
               </button>
               <div class="sage-mode-dropdown" id="sage-mode-dropdown">
                 <div class="sage-mode-dropdown-header">SAGE</div>
                 <button
                   class="sage-mode-item active"
-                  data-persona="intermediate"
-                  data-mode="experimental"
-                >
-                  <div class="sage-mode-item-content">
-                    <span class="sage-mode-item-title">Standard</span>
-                    <span class="sage-mode-item-desc"
-                      >Enhanced accuracy with citations</span
-                    >
-                  </div>
-                  <span class="sage-mode-check"
-                    ><i class="fa-solid fa-check"></i
-                  ></span>
-                </button>
-                <button
-                  class="sage-mode-item"
                   data-persona="balanced_plus"
                   data-mode="experimental"
                 >
@@ -2679,6 +2666,42 @@
                     ></span>
                     <span class="sage-mode-item-desc"
                       >Selective metacognition &amp; deeper analysis</span
+                    >
+                  </div>
+                  <span class="sage-mode-check"
+                    ><i class="fa-solid fa-check"></i
+                  ></span>
+                </button>
+                <button
+                  class="sage-mode-item"
+                  data-persona="balanced_plus_ps"
+                  data-mode="experimental"
+                >
+                  <div class="sage-mode-item-content">
+                    <span class="sage-mode-item-title"
+                      >Product Specialist
+                      <i class="fa-solid fa-bullseye text-orange-500 ml-1.5"></i
+                    ></span>
+                    <span class="sage-mode-item-desc"
+                      >Sales positioning &amp; competitive differentiation</span
+                    >
+                  </div>
+                  <span class="sage-mode-check"
+                    ><i class="fa-solid fa-check"></i
+                  ></span>
+                </button>
+                <button
+                  class="sage-mode-item"
+                  data-persona="balanced_plus_ta"
+                  data-mode="experimental"
+                >
+                  <div class="sage-mode-item-content">
+                    <span class="sage-mode-item-title"
+                      >Technical Assistant
+                      <i class="fa-solid fa-wrench text-teal-500 ml-1.5"></i
+                    ></span>
+                    <span class="sage-mode-item-desc"
+                      >Technical depth &amp; troubleshooting guidance</span
                     >
                   </div>
                   <span class="sage-mode-check"
@@ -2740,13 +2763,13 @@
                   <div class="sage-mode-legacy-inner">
                     <button
                       class="sage-mode-item"
-                      data-persona="none"
-                      data-mode="production"
+                      data-persona="intermediate"
+                      data-mode="experimental"
                     >
                       <div class="sage-mode-item-content">
                         <span class="sage-mode-item-title">Classic</span>
                         <span class="sage-mode-item-desc"
-                          >Standard pipeline, no persona</span
+                          >Enhanced accuracy with citations</span
                         >
                       </div>
                       <span class="sage-mode-check"
@@ -6313,8 +6336,10 @@
           // Standard → intermediate, Balanced+ → balanced_plus, Scientist → scientist
           // Legacy: Explorer → explorer, Classic → none/production
           const DISPLAY_NAMES = {
-            intermediate: "Standard",
+            intermediate: "Classic",
             balanced_plus: "Balanced+",
+            balanced_plus_ps: "Product Specialist",
+            balanced_plus_ta: "Technical Assistant",
             scientist: "Scientist",
             explorer: "Explorer",
             none: "Classic",
