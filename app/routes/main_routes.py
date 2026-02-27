@@ -24,6 +24,7 @@ logger.setLevel(log_level)
 if logger.handlers:
     logger.handlers.clear()
 # Add file handler with absolute path
+os.makedirs('logs', exist_ok=True)
 file_handler = logging.FileHandler('logs/app.log')
 file_handler.setLevel(log_level)
 formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
